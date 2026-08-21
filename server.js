@@ -1,4 +1,3 @@
-// EthioLiveScores Backend Server — Vercel + local compatible
 const express = require('express');
 const { Pool } = require('pg');
 const cors = require('cors');
@@ -13,189 +12,58 @@ app.disable('x-powered-by');
 app.use(cors());
 app.use(express.json({ limit: '64kb' }));
 
-const JWT_SECRET = process.env.JWT_SECRET || 'ethio_secret_key';
+const JWT_SECRET = process.env.JWT_SECRET || 'ethio_dev_secret_change_me';
 let pool;
 
 function getPool() {
-    if (!process.env.DATABASE_URL) return null;
-    if (!pool) {
-        pool = new Pool({
-            connectionString: process.env.DATABASE_URL,
-            ssl: process.env.NODE_ENV === 'production'
-                ? { rejectUnauthorized: false }
-                : undefined,
-            max: 5,
-            idleTimeoutMillis: 30000,
-            connectionTimeoutMillis: 5000
-        });
-    }
-    return pool;
+  if (!process.env.DATABASE_URL) return null;
+  if (!pool) pool = new Pool({ connectionString: process.env.DATABASE_URL, ssl: process.env.NODE_ENV === 'production' ? { rejectUnauthorized: false } : undefined, max: 5, idleTimeoutMillis: 30000, connectionTimeoutMillis: 5000 });
+  return pool;
+}
+function requireDatabase(req,res,next){const db=getPool();if(!db)return res.status(503).json({error:'Database is not configured.',action:'Add DATABASE_URL in Vercel environment variables.'});req.db=db;next()}
+function asyncRoute(handler){return(req,res,next)=>Promise.resolve(handler(req,res,next)).catch(next)}
+function readToken(req){const auth=req.header('Authorization')||'';const[scheme,token]=auth.split(' ');if(scheme!=='Bearer'||!token)return null;try{return jwt.verify(token,JWT_SECRET)}catch{return null}}
+function verifyToken(req,res,next){const user=readToken(req);if(!user)return res.status(401).json({error:'Authentication required.'});req.user=user;next()}
+function signUser(userId){return jwt.sign({userId},JWT_SECRET,{expiresIn:'7d'})}
+
+async function getProfile(db,userId){
+  const {rows}=await db.query(`SELECT u.id,u.username,u.email,u.display_name,u.avatar_seed,u.created_at,p.preferred_language,p.theme,p.notify_goals,p.notify_kickoff,p.notify_halftime,p.notify_fulltime,p.notify_red_cards,p.notify_news FROM users u LEFT JOIN user_preferences p ON p.user_id=u.id WHERE u.id=$1`,[userId]);
+  if(!rows.length)return null;const r=rows[0];
+  return {user:{id:r.id,username:r.username,email:r.email,display_name:r.display_name,avatar_seed:r.avatar_seed,created_at:r.created_at},preferences:{preferred_language:r.preferred_language||'en',theme:r.theme||'system',notify_goals:r.notify_goals??true,notify_kickoff:r.notify_kickoff??true,notify_halftime:r.notify_halftime??false,notify_fulltime:r.notify_fulltime??true,notify_red_cards:r.notify_red_cards??true,notify_news:r.notify_news??false}};
 }
 
-function requireDatabase(req, res, next) {
-    const db = getPool();
-    if (!db) {
-        return res.status(503).json({
-            error: 'Database is not configured.',
-            action: 'Add DATABASE_URL in Vercel Project Settings → Environment Variables.'
-        });
-    }
-    req.db = db;
-    next();
-}
+app.get('/api/health',asyncRoute(async(req,res)=>{const db=getPool();if(!db)return res.status(503).json({ok:false,service:'EthioLiveScores API',database:'not-configured'});await db.query('SELECT 1');res.json({ok:true,service:'EthioLiveScores API',database:'connected'})}));
+app.get('/api/matches',requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query(`SELECT m.*,l.name_en AS league_name,l.name_am AS league_name_am,t1.name_en AS home_en,t1.name_am AS home_am,t1.short_name AS home_short,t2.name_en AS away_en,t2.name_am AS away_am,t2.short_name AS away_short FROM matches m JOIN leagues l ON l.id=m.league_id JOIN teams t1 ON m.home_team_id=t1.id JOIN teams t2 ON m.away_team_id=t2.id ORDER BY m.match_date ASC`);res.json(rows)}));
+app.get('/api/standings',requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query('SELECT * FROM league_standings');res.json(rows)}));
+app.get('/api/teams',requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query('SELECT id,name_en,name_am,short_name,avatar_seed FROM teams ORDER BY name_en');res.json(rows)}));
 
-function asyncRoute(handler) {
-    return (req, res, next) => Promise.resolve(handler(req, res, next)).catch(next);
-}
-
-const verifyToken = (req, res, next) => {
-    const auth = req.header('Authorization') || '';
-    const [scheme, token] = auth.split(' ');
-
-    if (scheme !== 'Bearer' || !token) {
-        return res.status(401).json({ error: 'Access denied.' });
-    }
-
-    try {
-        req.user = jwt.verify(token, JWT_SECRET);
-        next();
-    } catch (err) {
-        return res.status(401).json({ error: 'Invalid token.' });
-    }
-};
-
-// Health endpoint never crashes the whole deployment when the DB is missing.
-app.get('/api/health', asyncRoute(async (req, res) => {
-    const db = getPool();
-    if (!db) {
-        return res.status(503).json({
-            ok: false,
-            service: 'EthioLiveScores API',
-            database: 'not-configured'
-        });
-    }
-
-    await db.query('SELECT 1');
-    res.json({ ok: true, service: 'EthioLiveScores API', database: 'connected' });
+app.post('/api/auth/register',requireDatabase,asyncRoute(async(req,res)=>{
+  const username=String(req.body?.username||'').trim(),email=String(req.body?.email||'').trim().toLowerCase(),password=String(req.body?.password||'');
+  if(username.length<3||username.length>50)return res.status(400).json({error:'Username must be 3–50 characters.'});
+  if(!/^\S+@\S+\.\S+$/.test(email))return res.status(400).json({error:'Enter a valid email address.'});
+  if(password.length<8)return res.status(400).json({error:'Password must be at least 8 characters.'});
+  const hash=await bcrypt.hash(password,12),seed=username.toLowerCase().replace(/[^a-z0-9]+/g,'-').replace(/^-|-$/g,'')||'fan';const client=await req.db.connect();
+  try{await client.query('BEGIN');const{rows}=await client.query(`INSERT INTO users(username,email,password_hash,display_name,avatar_seed) VALUES($1,$2,$3,$1,$4) RETURNING id`,[username,email,hash,seed]);await client.query('INSERT INTO user_preferences(user_id) VALUES($1) ON CONFLICT(user_id) DO NOTHING',[rows[0].id]);await client.query('COMMIT');const profile=await getProfile(req.db,rows[0].id);res.status(201).json({token:signUser(rows[0].id),...profile})}catch(error){await client.query('ROLLBACK');if(error.code==='23505')return res.status(409).json({error:'That username or email is already in use.'});throw error}finally{client.release()}
 }));
+app.post('/api/auth/login',requireDatabase,asyncRoute(async(req,res)=>{const email=String(req.body?.email||'').trim().toLowerCase(),password=String(req.body?.password||'');const{rows}=await req.db.query('SELECT id,password_hash FROM users WHERE email=$1',[email]);if(!rows.length||!(await bcrypt.compare(password,rows[0].password_hash)))return res.status(400).json({error:'Invalid email or password.'});const profile=await getProfile(req.db,rows[0].id);res.json({token:signUser(rows[0].id),...profile})}));
+app.get('/api/auth/me',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const profile=await getProfile(req.db,req.user.userId);if(!profile)return res.status(404).json({error:'Account not found.'});res.json(profile)}));
+app.patch('/api/auth/me',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const username=req.body?.username===undefined?null:String(req.body.username).trim(),displayName=req.body?.display_name===undefined?null:String(req.body.display_name).trim(),avatarSeed=req.body?.avatar_seed===undefined?null:String(req.body.avatar_seed).trim();if(username!==null&&(username.length<3||username.length>50))return res.status(400).json({error:'Username must be 3–50 characters.'});if(displayName!==null&&displayName.length>80)return res.status(400).json({error:'Display name is too long.'});if(avatarSeed!==null&&avatarSeed.length>100)return res.status(400).json({error:'Avatar seed is too long.'});try{await req.db.query(`UPDATE users SET username=COALESCE($2,username),display_name=COALESCE($3,display_name),avatar_seed=COALESCE($4,avatar_seed) WHERE id=$1`,[req.user.userId,username,displayName,avatarSeed])}catch(error){if(error.code==='23505')return res.status(409).json({error:'That username is already taken.'});throw error}res.json(await getProfile(req.db,req.user.userId))}));
 
-app.get('/api/matches', requireDatabase, asyncRoute(async (req, res) => {
-    const { rows } = await req.db.query(`
-        SELECT m.*,
-               t1.name_en AS home_en,
-               t1.name_am AS home_am,
-               t2.name_en AS away_en,
-               t2.name_am AS away_am
-        FROM matches m
-        JOIN teams t1 ON m.home_team_id = t1.id
-        JOIN teams t2 ON m.away_team_id = t2.id
-        ORDER BY m.match_date ASC
-    `);
-    res.json(rows);
-}));
+app.get('/api/me/favorites',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query(`SELECT t.id,t.name_en,t.name_am,t.short_name,t.avatar_seed FROM user_favorite_teams f JOIN teams t ON t.id=f.team_id WHERE f.user_id=$1 ORDER BY t.name_en`,[req.user.userId]);res.json(rows)}));
+app.post('/api/me/favorites/:teamId',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{await req.db.query('INSERT INTO user_favorite_teams(user_id,team_id) VALUES($1,$2) ON CONFLICT DO NOTHING',[req.user.userId,req.params.teamId]);res.sendStatus(204)}));
+app.delete('/api/me/favorites/:teamId',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{await req.db.query('DELETE FROM user_favorite_teams WHERE user_id=$1 AND team_id=$2',[req.user.userId,req.params.teamId]);res.sendStatus(204)}));
+app.get('/api/me/preferences',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const profile=await getProfile(req.db,req.user.userId);res.json(profile?.preferences||{})}));
+app.put('/api/me/preferences',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const p=req.body||{},language=['en','am'].includes(p.preferred_language)?p.preferred_language:'en',theme=['system','light','dark'].includes(p.theme)?p.theme:'system',value=key=>Boolean(p[key]);const{rows}=await req.db.query(`INSERT INTO user_preferences(user_id,preferred_language,theme,notify_goals,notify_kickoff,notify_halftime,notify_fulltime,notify_red_cards,notify_news,updated_at) VALUES($1,$2,$3,$4,$5,$6,$7,$8,$9,NOW()) ON CONFLICT(user_id) DO UPDATE SET preferred_language=EXCLUDED.preferred_language,theme=EXCLUDED.theme,notify_goals=EXCLUDED.notify_goals,notify_kickoff=EXCLUDED.notify_kickoff,notify_halftime=EXCLUDED.notify_halftime,notify_fulltime=EXCLUDED.notify_fulltime,notify_red_cards=EXCLUDED.notify_red_cards,notify_news=EXCLUDED.notify_news,updated_at=NOW() RETURNING preferred_language,theme,notify_goals,notify_kickoff,notify_halftime,notify_fulltime,notify_red_cards,notify_news`,[req.user.userId,language,theme,value('notify_goals'),value('notify_kickoff'),value('notify_halftime'),value('notify_fulltime'),value('notify_red_cards'),value('notify_news')]);res.json(rows[0])}));
+app.get('/api/me/predictions',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query(`SELECT p.id,p.match_id,p.vote_choice,m.status,m.home_score,m.away_score,m.match_date,h.name_en AS home_en,a.name_en AS away_en FROM poll_votes p JOIN matches m ON m.id=p.match_id JOIN teams h ON h.id=m.home_team_id JOIN teams a ON a.id=m.away_team_id WHERE p.user_id=$1 ORDER BY p.id DESC LIMIT 50`,[req.user.userId]);res.json(rows)}));
 
-app.get('/api/standings', requireDatabase, asyncRoute(async (req, res) => {
-    const { rows } = await req.db.query('SELECT * FROM league_standings');
-    res.json(rows);
-}));
+app.get('/api/polls/:matchId',requireDatabase,asyncRoute(async(req,res)=>{const matchId=Number(req.params.matchId),{rows}=await req.db.query('SELECT home_votes,draw_votes,away_votes FROM match_polls WHERE match_id=$1',[matchId]);const counts=rows[0]||{home_votes:0,draw_votes:0,away_votes:0},decoded=readToken(req);let myVote=null;if(decoded){const vote=await req.db.query('SELECT vote_choice FROM poll_votes WHERE match_id=$1 AND user_id=$2',[matchId,decoded.userId]);myVote=vote.rows[0]?.vote_choice||null}res.json({...counts,my_vote:myVote})}));
+app.post('/api/polls/:matchId',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const choice=String(req.body?.vote_choice||'').toLowerCase();if(!['home','draw','away'].includes(choice))return res.status(400).json({error:'vote_choice must be home, draw, or away.'});const matchId=Number(req.params.matchId),client=await req.db.connect();try{await client.query('BEGIN');await client.query(`INSERT INTO poll_votes(match_id,user_id,vote_choice) VALUES($1,$2,$3) ON CONFLICT(match_id,user_id) DO UPDATE SET vote_choice=EXCLUDED.vote_choice`,[matchId,req.user.userId,choice]);await client.query(`INSERT INTO match_polls(match_id,home_votes,draw_votes,away_votes) SELECT $1,COUNT(*) FILTER(WHERE vote_choice='home'),COUNT(*) FILTER(WHERE vote_choice='draw'),COUNT(*) FILTER(WHERE vote_choice='away') FROM poll_votes WHERE match_id=$1 ON CONFLICT(match_id) DO UPDATE SET home_votes=EXCLUDED.home_votes,draw_votes=EXCLUDED.draw_votes,away_votes=EXCLUDED.away_votes`,[matchId]);await client.query('COMMIT')}catch(error){await client.query('ROLLBACK');throw error}finally{client.release()}res.status(201).json({ok:true})}));
 
-app.post('/api/auth/register', requireDatabase, asyncRoute(async (req, res) => {
-    const { username, email, password } = req.body || {};
-    if (!username || !email || !password) {
-        return res.status(400).json({ error: 'username, email and password are required.' });
-    }
+app.get('/api/chat/:matchId',requireDatabase,asyncRoute(async(req,res)=>{const{rows}=await req.db.query(`SELECT m.*,u.username,u.avatar_seed FROM live_chat_messages m JOIN users u ON u.id=m.user_id WHERE m.match_id=$1 ORDER BY m.created_at DESC LIMIT 30`,[req.params.matchId]);res.json(rows.reverse())}));
+app.post('/api/chat/:matchId',verifyToken,requireDatabase,asyncRoute(async(req,res)=>{const message=String(req.body?.message_text||'').trim();if(!message||message.length>280)return res.status(400).json({error:'Message must be 1–280 characters.'});const banned=await req.db.query('SELECT 1 FROM banned_users WHERE banned_user_id=$1 LIMIT 1',[req.user.userId]);if(banned.rowCount)return res.status(403).json({error:'This account is banned from chat.'});await req.db.query('INSERT INTO live_chat_messages(match_id,user_id,message_text) VALUES($1,$2,$3)',[req.params.matchId,req.user.userId,message]);res.sendStatus(201)}));
 
-    const hash = await bcrypt.hash(password, 10);
-    const seed = username.toLowerCase().trim().replace(/\s+/g, '-');
-    const { rows } = await req.db.query(
-        'INSERT INTO users (username, email, password_hash, avatar_seed) VALUES ($1, $2, $3, $4) RETURNING id, username, avatar_seed',
-        [username.trim(), email.trim().toLowerCase(), hash, seed]
-    );
-    res.status(201).json(rows[0]);
-}));
-
-app.post('/api/auth/login', requireDatabase, asyncRoute(async (req, res) => {
-    const { email, password } = req.body || {};
-    if (!email || !password) {
-        return res.status(400).json({ error: 'email and password are required.' });
-    }
-
-    const { rows } = await req.db.query('SELECT * FROM users WHERE email = $1', [email.trim().toLowerCase()]);
-    if (rows.length === 0 || !(await bcrypt.compare(password, rows[0].password_hash))) {
-        return res.status(400).json({ error: 'Invalid credentials' });
-    }
-
-    const token = jwt.sign({ userId: rows[0].id }, JWT_SECRET, { expiresIn: '24h' });
-    res.json({
-        token,
-        user: { username: rows[0].username, seed: rows[0].avatar_seed }
-    });
-}));
-
-app.get('/api/chat/:matchId', requireDatabase, asyncRoute(async (req, res) => {
-    const { rows } = await req.db.query(
-        `SELECT m.*, u.username, u.avatar_seed
-         FROM live_chat_messages m
-         JOIN users u ON m.user_id = u.id
-         WHERE m.match_id = $1
-         ORDER BY m.created_at DESC
-         LIMIT 30`,
-        [req.params.matchId]
-    );
-    res.json(rows.reverse());
-}));
-
-app.post('/api/chat/:matchId', verifyToken, requireDatabase, asyncRoute(async (req, res) => {
-    const message = String(req.body?.message_text || '').trim();
-    if (!message) return res.status(400).json({ error: 'Message cannot be empty.' });
-    if (message.length > 280) return res.status(400).json({ error: 'Message is limited to 280 characters.' });
-
-    const banned = await req.db.query(
-        'SELECT 1 FROM banned_users WHERE banned_user_id = $1 LIMIT 1',
-        [req.user.userId]
-    );
-    if (banned.rowCount) return res.status(403).json({ error: 'This account is banned from chat.' });
-
-    await req.db.query(
-        'INSERT INTO live_chat_messages (match_id, user_id, message_text) VALUES ($1, $2, $3)',
-        [req.params.matchId, req.user.userId, message]
-    );
-    res.sendStatus(201);
-}));
-
-// Serve the frontend through the same Express deployment so Vercel has one stable entrypoint.
-app.get('/manifest.json', (req, res) => {
-    res.type('application/manifest+json').sendFile(path.join(__dirname, 'manifest.json'));
-});
-
-app.get('/sw.js', (req, res) => {
-    res.type('application/javascript').sendFile(path.join(__dirname, 'sw.js'));
-});
-
-app.get('/', (req, res) => {
-    res.type('html').sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.use((req, res) => {
-    if (req.path.startsWith('/api/')) {
-        return res.status(404).json({ error: 'API route not found.' });
-    }
-    return res.type('html').sendFile(path.join(__dirname, 'index.html'));
-});
-
-app.use((err, req, res, next) => {
-    console.error('EthioLiveScores request error:', err);
-    if (res.headersSent) return next(err);
-    res.status(500).json({
-        error: 'Internal server error.',
-        detail: process.env.NODE_ENV === 'production' ? undefined : err.message
-    });
-});
-
-// Local development only. Vercel imports the exported Express app instead.
-if (require.main === module) {
-    const port = Number(process.env.PORT || 5000);
-    app.listen(port, () => console.log(`EthioLiveScores online on port ${port}`));
-}
-
-module.exports = app;
+const distDir=path.join(__dirname,'dist');if(fs.existsSync(distDir))app.use(express.static(distDir,{index:false,maxAge:'1h'}));
+app.use((req,res)=>{if(req.path.startsWith('/api/'))return res.status(404).json({error:'API route not found.'});const file=fs.existsSync(path.join(distDir,'index.html'))?path.join(distDir,'index.html'):path.join(__dirname,'index.html');return res.type('html').sendFile(file)});
+app.use((err,req,res,next)=>{console.error('EthioLiveScores request error:',err);if(res.headersSent)return next(err);res.status(500).json({error:'Internal server error.',detail:process.env.NODE_ENV==='production'?undefined:err.message})});
+if(require.main===module){const port=Number(process.env.PORT||5000);app.listen(port,()=>console.log(`EthioLiveScores API online on port ${port}`))}
+module.exports=app;
