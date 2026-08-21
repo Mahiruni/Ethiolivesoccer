@@ -1,0 +1,51 @@
+/* Performance + polish layer: GPU-light, mobile-first, reduced jank. */
+html{scroll-behavior:smooth;scrollbar-gutter:stable}
+body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
+button,a,[role="button"]{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,opacity .16s ease}
+img{image-rendering:auto}
+
+/* Keep below-the-fold modules cheap until they approach the viewport. */
+.home-extras,.competition-results,.news-grid,.compact-story-list{content-visibility:auto;contain-intrinsic-size:1px 520px}
+.league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{contain:paint}
+
+/* Route-level loading skeleton shown only while a lazy chunk is downloading. */
+.route-skeleton{display:grid;gap:12px;padding-top:22px!important}
+.route-skeleton-line,.route-skeleton-card{position:relative;overflow:hidden;background:#15151c;border:1px solid #22222c;border-radius:12px}
+.route-skeleton-line{height:18px;width:38%}.route-skeleton-line.wide{height:30px;width:62%}
+.route-skeleton-card{height:180px;border-radius:18px}.route-skeleton-card.short{height:110px}
+.route-skeleton-line::after,.route-skeleton-card::after{content:"";position:absolute;inset:0;transform:translateX(-100%);background:linear-gradient(90deg,transparent,rgba(192,132,252,.08),transparent);animation:routeShimmer 1.15s ease-in-out infinite}
+@keyframes routeShimmer{to{transform:translateX(100%)}}
+.home-extras-loading{padding-top:0!important}.home-extras-loading .route-skeleton-card{height:110px}
+
+/* Smooth visual feedback without scale/zoom effects. */
+@media(hover:hover) and (pointer:fine){
+  .competition-card:hover,.news-card:hover,.match-row:hover,.compact-story:hover{border-color:rgba(168,85,247,.38)}
+  .icon-btn:hover,.signin-btn:hover,.mini-refresh:hover:not(:disabled){box-shadow:0 0 0 3px rgba(168,85,247,.08)}
+}
+
+/* Mobile: blur/backdrop filters are expensive on many Android GPUs. Solid translucent
+   surfaces preserve the design while making scroll and touch substantially smoother. */
+@media(max-width:760px){
+  html{scrollbar-gutter:auto;scroll-behavior:auto}
+  body{overscroll-behavior-y:none}
+  .topbar,.mobile-score-controls,.competition-toolbar,.competition-tabs-sticky,.detail-toolbar,.match-tabs{
+    -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
+    background:rgba(9,9,13,.985)!important;
+  }
+  .profile-drawer,.auth-modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
+  .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{box-shadow:none!important}
+  .competition-results,.news-grid,.home-extras{contain-intrinsic-size:1px 420px}
+  .route-skeleton{padding:12px!important}.route-skeleton-line{width:52%}.route-skeleton-line.wide{width:78%}.route-skeleton-card{height:150px}
+  .date-strip,.filters,.competition-filter-scroll,.match-tabs,.competition-tabs{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
+  .bottom-nav,.topbar{transform:translateZ(0)}
+}
+
+@media(max-width:390px){
+  .route-skeleton-line.wide{width:86%}.route-skeleton-card{height:132px}
+}
+
+@media(prefers-reduced-motion:reduce){
+  html{scroll-behavior:auto!important}
+  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
+}
