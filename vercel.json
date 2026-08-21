@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "functions": {
-    "server.js": {
+    "bootstrap.js": {
       "includeFiles": "dist/**"
     }
   },

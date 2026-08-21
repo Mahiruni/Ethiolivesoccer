@@ -1,14 +1,14 @@
 {
   "name": "ethio-live-scores",
-  "version": "2.1.0",
+  "version": "2.2.0",
   "private": true,
-  "description": "Component-based Ethiopian football live scores, competitions, news and push community platform",
+  "description": "Component-based Ethiopian and international football live scores, competitions, sourced news and community platform",
   "type": "commonjs",
-  "main": "server.js",
+  "main": "bootstrap.js",
   "scripts": {
     "build": "vite build",
-    "start": "node server.js",
-    "dev": "concurrently \"vite\" \"node server.js\""
+    "start": "node bootstrap.js",
+    "dev": "concurrently \"vite\" \"node bootstrap.js\""
   },
   "engines": {"node": "22.x"},
   "dependencies": {

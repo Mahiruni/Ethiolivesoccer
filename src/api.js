@@ -4,11 +4,12 @@ const inFlight=new Map();
 
 function ttlFor(path,method){
   if(method!=='GET')return 0;
-  if(path.startsWith('/matches'))return 10000;
+  if(path.startsWith('/matches'))return 12000;
   if(path==='/standings'||path.startsWith('/standings?'))return 45000;
-  if(path==='/provider/status')return 300000;
+  if(path==='/provider/status')return 60000;
   if(path==='/competitions')return 300000;
   if(path.startsWith('/competitions/'))return 30000;
+  if(path==='/teams'||path.startsWith('/teams?'))return 300000;
   if(path==='/news'||path.startsWith('/news?'))return 60000;
   if(path.startsWith('/news/'))return 120000;
   if(path.startsWith('/match/')&&path.endsWith('/details'))return 10000;
@@ -35,7 +36,7 @@ export async function apiFetch(path,options={}){
   }
 
   const request=(async()=>{
-    const response=await fetch(`${API}${path}`,{...options,method,headers,cache:'no-store'});
+    const response=await fetch(`${API}${path}`,{...options,method,headers,cache:method==='GET'?'default':'no-store'});
     let data=null;
     const type=response.headers.get('content-type')||'';
     if(type.includes('application/json'))data=await response.json();
