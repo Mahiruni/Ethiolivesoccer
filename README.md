@@ -1,53 +1,48 @@
 # EthioLiveScores - Community Football Platform
 
-EthioLiveScores is a dual-language Ethiopian football live-score community application using PostgreSQL, Express, JWT authentication, live chat, standings, and PWA installation support.
+EthioLiveScores is a dual-language Ethiopian football live-score community application using PostgreSQL, Express, JWT authentication, live chat, standings, predictions, account personalization, and PWA installation support.
 
-## Vercel deployment fix
+## v2 React architecture
 
-This version is Vercel-compatible:
+The frontend is now a component-based **React + Vite** application while the existing **Node.js + Express + PostgreSQL** backend remains the API layer. The app includes reusable components for the live match center, authentication, profile management, mobile navigation, favorites, notification preferences, predictions, and match-day chat.
 
-- `package.json` declares all Node.js dependencies so Vercel can install them.
-- `server.js` exports the Express app instead of starting a permanent server in Vercel.
-- The frontend uses same-origin `/api` requests instead of `http://localhost:5000/api`.
-- Database failures return API errors instead of crashing the whole deployment.
-- `vercel.json` includes frontend/PWA files in the Express function bundle.
-- `sw.js` enables basic PWA caching without caching live API responses.
+## Account features
+
+- Polished sign-in and registration flow with 7-day JWT sessions.
+- Editable display name, username, and generated avatar seed.
+- Favorite-team management.
+- Notification preferences for goals, kickoff, half-time, full-time, red cards, and club news.
+- Account-backed prediction voting and prediction history.
+- Authenticated match-day chat with the existing ban filter.
+
+For an existing database, run the migration:
+
+```bash
+psql "$DATABASE_URL" -f migrations/001_auth_profile.sql
+```
+
+For a fresh database, run:
+
+```bash
+psql "$DATABASE_URL" -f schema.sql
+```
 
 ## Required Vercel environment variables
-
-In **Vercel → Project → Settings → Environment Variables**, add:
 
 ```env
 DATABASE_URL=postgresql://USER:PASSWORD@HOST:5432/DATABASE
 JWT_SECRET=use-a-long-random-production-secret
 ```
 
-Apply them to **Production** and redeploy.
-
-## Database setup
-
-Run:
-
-```bash
-psql -U your_user -d your_db -f schema.sql
-```
-
 ## Local development
 
 ```bash
 npm install
-cp .env.example .env
 npm run dev
 ```
 
-Open `http://localhost:5000`.
+Vite runs the React development frontend and proxies `/api` to the Express server on port 5000. Production builds use `npm run build`, and Express serves the generated `dist` bundle.
 
 ## Health check
 
-After deployment, visit:
-
-```text
-https://YOUR-DOMAIN.vercel.app/api/health
-```
-
-A working database returns `database: "connected"`. If `DATABASE_URL` has not been configured, the endpoint returns a controlled 503 response while the frontend remains online.
+Visit `/api/health`. A working database returns `database: "connected"`. If `DATABASE_URL` is not configured, the public frontend still loads with demo score data while database-backed account features remain unavailable.
