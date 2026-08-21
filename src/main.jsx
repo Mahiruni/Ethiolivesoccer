@@ -7,6 +7,7 @@ import './styles.css';
 import './upgrade.css';
 import './brand.css';
 import './mobile.css';
+import './competition-ui.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>
