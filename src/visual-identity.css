@@ -1,0 +1,21 @@
+/* Visual identity rule: official logo first, semantic football icon otherwise. */
+.competition-visual{display:grid;place-items:center;overflow:hidden;flex:0 0 auto}
+.competition-visual.has-logo{background:#fff!important;border:1px solid rgba(255,255,255,.16)!important;box-shadow:0 8px 24px rgba(0,0,0,.28)!important}
+.competition-visual.has-logo img{width:100%;height:100%;object-fit:contain;padding:6px;background:#fff}
+.competition-visual.has-icon{background:linear-gradient(145deg,#6d28d9,#9333ea 56%,#c084fc)!important;color:#fff!important;border:1px solid rgba(216,180,254,.28)!important}
+.competition-filter-scroll button{display:flex!important;align-items:center;justify-content:center;gap:7px!important}
+.competition-filter-scroll button svg{flex:0 0 auto;color:#c084fc}
+.competition-filter-scroll button.active svg{color:#fff}
+.competition-card-tier svg{flex:0 0 auto}
+.competition-fixture-team i,.competition-table-team i{display:grid!important;place-items:center!important;background:#21182f!important;color:#d8b4fe!important}
+.competition-fixture-team i svg,.competition-table-team i svg{width:14px;height:14px}
+
+/* Keep provider/verified logos clean in score and table contexts. */
+.league-logo:has(img),.big-team:has(img),.team-dot:has(img){background:#fff!important}
+.league-logo img,.big-team img,.mini-logo-img,.tiny-logo-img,.team-dot img,.competition-fixture-team img,.competition-table-team img{object-fit:contain!important}
+
+@media(max-width:760px){
+  .competition-visual.has-logo img{padding:4px}
+  .competition-filter-scroll button{gap:6px!important}
+  .competition-filter-scroll button svg{width:13px;height:13px}
+}
