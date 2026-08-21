@@ -17,7 +17,48 @@ body{
 #root{min-height:100vh;overflow:visible}
 button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
 button,a,[role="button"]{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,opacity .16s ease}
-img{image-rendering:auto}
+img{image-rendering:auto;max-width:100%}
+
+/* Hard size limits for identity artwork. Provider/verified crest files can be very large,
+   so constrain both the slot and the image rather than trusting intrinsic dimensions. */
+.big-team,.league-logo,.team-dot,.competition-badge,.competition-hero-mark,.competition-visual,.hero-team-logo{
+  overflow:hidden!important;
+  flex:0 0 auto;
+}
+.big-team img,.league-logo img,.team-dot img,.competition-badge img,.competition-hero-mark img,.competition-visual img,.hero-team-logo img{
+  display:block!important;
+  width:100%!important;
+  height:100%!important;
+  max-width:100%!important;
+  max-height:100%!important;
+  object-fit:contain!important;
+  object-position:center!important;
+}
+.mini-logo-img{
+  display:block!important;
+  width:28px!important;
+  height:28px!important;
+  max-width:28px!important;
+  max-height:28px!important;
+  flex:0 0 28px!important;
+  object-fit:contain!important;
+}
+.tiny-logo-img{
+  display:block!important;
+  width:24px!important;
+  height:24px!important;
+  max-width:24px!important;
+  max-height:24px!important;
+  flex:0 0 24px!important;
+  object-fit:contain!important;
+}
+.competition-fixture-team img,.competition-table-team img,.lineup-title img,.full-table-row img{
+  display:block!important;
+  max-width:32px!important;
+  max-height:32px!important;
+  object-fit:contain!important;
+}
+.team-badge-wrap,.mini-teams,.league-identity,.standing-row>span:nth-child(2){min-width:0}
 
 /* Route-level loading skeleton */
 .route-skeleton{display:grid;gap:12px;padding-top:22px!important}
@@ -59,9 +100,10 @@ img{image-rendering:auto}
   .side-column{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;min-width:0;margin:0!important}
   .league-card,.side-card,.sponsor-card{border-radius:18px!important}
   .league-head{min-height:60px!important;padding:12px 15px!important}
-  .featured-match{margin:10px!important;border-radius:16px!important;padding:19px 17px 16px!important}
+  .featured-match{margin:10px!important;border-radius:16px!important;padding:19px 17px 16px!important;overflow:hidden!important}
   .scoreboard{grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr)!important;gap:12px!important}
-  .big-team{width:62px!important;height:62px!important}
+  .big-team{width:62px!important;height:62px!important;min-width:62px!important;max-width:62px!important;min-height:62px!important;max-height:62px!important}
+  .league-logo{width:34px!important;height:34px!important;min-width:34px!important;max-width:34px!important;min-height:34px!important;max-height:34px!important}
   .team-badge-wrap b{font-size:11px!important;max-width:160px}
   .score-center strong{font-size:32px!important}
   .match-row{min-height:70px!important;grid-template-columns:58px minmax(0,1fr) 42px 18px!important;padding:11px 15px!important}
@@ -74,6 +116,7 @@ img{image-rendering:auto}
   .section-title-row h2{font-size:21px!important;line-height:1.08!important;margin-top:5px!important}
   .competition-scroll{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;grid-auto-columns:auto!important;gap:10px!important;overflow:visible!important;padding:0!important}
   .competition-scroll .competition-card{width:100%!important;min-height:108px!important}
+  .competition-scroll .competition-badge{width:46px!important;height:46px!important;min-width:46px!important;max-width:46px!important;min-height:46px!important;max-height:46px!important}
   .news-teaser-grid{display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(290px,.55fr)!important;gap:12px!important}
   .lead-story{grid-template-columns:190px minmax(0,1fr)!important;min-height:190px!important}
   .lead-story>div:last-child{padding:18px 18px 18px 0!important;min-width:0}
