@@ -1,0 +1,8 @@
+-- EthioLiveScores v2.1: push notifications + bilingual news/content layer
+ALTER TABLE user_preferences ADD COLUMN IF NOT EXISTS notify_news BOOLEAN NOT NULL DEFAULT false;
+CREATE TABLE IF NOT EXISTS push_subscriptions (id BIGSERIAL PRIMARY KEY,user_id INT NOT NULL REFERENCES users(id) ON DELETE CASCADE,endpoint TEXT NOT NULL UNIQUE,p256dh TEXT NOT NULL,auth_key TEXT NOT NULL,expiration_time BIGINT,created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_push_subscriptions_user_id ON push_subscriptions(user_id);
+CREATE TABLE IF NOT EXISTS news_articles (id BIGSERIAL PRIMARY KEY,slug VARCHAR(180) NOT NULL UNIQUE,category VARCHAR(40) NOT NULL DEFAULT 'News',competition_slug VARCHAR(120),team_id INT REFERENCES teams(id) ON DELETE SET NULL,title_en VARCHAR(240) NOT NULL,title_am VARCHAR(240) NOT NULL,summary_en TEXT NOT NULL,summary_am TEXT NOT NULL,body_en TEXT NOT NULL,body_am TEXT NOT NULL,image_url TEXT,is_published BOOLEAN NOT NULL DEFAULT false,published_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,created_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP,updated_at TIMESTAMP WITH TIME ZONE NOT NULL DEFAULT CURRENT_TIMESTAMP);
+CREATE INDEX IF NOT EXISTS idx_news_articles_published ON news_articles(is_published,published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_articles_competition ON news_articles(competition_slug,published_at DESC);
+CREATE INDEX IF NOT EXISTS idx_news_articles_team ON news_articles(team_id,published_at DESC);
