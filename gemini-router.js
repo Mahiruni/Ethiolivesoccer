@@ -4,6 +4,7 @@ const router = express.Router();
 const GEMINI_API_KEY = process.env.GEMINI_API_KEY || '';
 const GEMINI_MODEL = process.env.GEMINI_MODEL || 'gemini-3.7-flash';
 const GEMINI_API_BASE = process.env.GEMINI_API_BASE || 'https://generativelanguage.googleapis.com/v1beta';
+const FALLBACK_MODELS = ['gemini-3.6-flash', 'gemini-3.5-flash'];
 const CACHE_TTL_MS = 5 * 60 * 1000;
 let cachedUpdate = null;
 
@@ -99,8 +100,7 @@ function extractSources(payload) {
   return sources;
 }
 
-function normalizeUpdate(value, sources) {
-  const fallback = emptyUpdate();
+function normalizeUpdate(value, sources, model) {
   const data = value && typeof value === 'object' && !Array.isArray(value) ? value : {};
   const football = data.football && typeof data.football === 'object' ? data.football : {};
   const standings = football.standings_top && typeof football.standings_top === 'object' ? football.standings_top : {};
@@ -135,22 +135,13 @@ function normalizeUpdate(value, sources) {
       technology: asArray(generalNews.technology),
       business: asArray(generalNews.business)
     },
-    sources: sources.length ? sources : asArray(data.sources)
+    sources: sources.length ? sources : asArray(data.sources),
+    _meta: { provider: 'Google Gemini', model }
   };
 }
 
-async function fetchGeminiUpdate() {
-  if (!GEMINI_API_KEY) {
-    const error = new Error('Gemini is not configured. Add GEMINI_API_KEY to the deployment environment.');
-    error.status = 503;
-    throw error;
-  }
-
-  if (cachedUpdate && Date.now() - cachedUpdate.at < CACHE_TTL_MS) {
-    return cachedUpdate.value;
-  }
-
-  const endpoint = `${GEMINI_API_BASE.replace(/\/$/, '')}/models/${encodeURIComponent(GEMINI_MODEL)}:generateContent`;
+async function requestModel(model) {
+  const endpoint = `${GEMINI_API_BASE.replace(/\/$/, '')}/models/${encodeURIComponent(model)}:generateContent`;
   const response = await fetch(endpoint, {
     method: 'POST',
     headers: {
@@ -172,6 +163,8 @@ async function fetchGeminiUpdate() {
     const providerMessage = payload?.error?.message || `Gemini request failed (${response.status}).`;
     const error = new Error(providerMessage);
     error.status = response.status === 401 || response.status === 403 ? 502 : response.status;
+    error.providerStatus = response.status;
+    error.model = model;
     throw error;
   }
 
@@ -180,9 +173,36 @@ async function fetchGeminiUpdate() {
     .join('')
     .trim();
 
-  const data = normalizeUpdate(parseModelJson(text), extractSources(payload));
-  cachedUpdate = { at: Date.now(), value: data };
-  return data;
+  return normalizeUpdate(parseModelJson(text), extractSources(payload), model);
+}
+
+async function fetchGeminiUpdate() {
+  if (!GEMINI_API_KEY) {
+    const error = new Error('Gemini is not configured. Add GEMINI_API_KEY to the deployment environment.');
+    error.status = 503;
+    throw error;
+  }
+
+  if (cachedUpdate && Date.now() - cachedUpdate.at < CACHE_TTL_MS) {
+    return cachedUpdate.value;
+  }
+
+  const models = [...new Set([GEMINI_MODEL, ...FALLBACK_MODELS])];
+  let lastError;
+
+  for (const model of models) {
+    try {
+      const data = await requestModel(model);
+      cachedUpdate = { at: Date.now(), value: data };
+      return data;
+    } catch (error) {
+      lastError = error;
+      const retryable = [404, 429, 500, 502, 503, 504].includes(Number(error.providerStatus || error.status));
+      if (!retryable) break;
+    }
+  }
+
+  throw lastError || new Error('Unable to load a Gemini live update.');
 }
 
 router.get('/gemini/status', (req, res) => {
@@ -191,6 +211,7 @@ router.get('/gemini/status', (req, res) => {
     configured: Boolean(GEMINI_API_KEY),
     provider: 'Google Gemini',
     model: GEMINI_MODEL,
+    fallbackModels: FALLBACK_MODELS,
     searchGrounding: true,
     action: GEMINI_API_KEY ? null : 'Add GEMINI_API_KEY to the deployment environment.'
   });
@@ -205,7 +226,7 @@ router.get('/live-update', async (req, res) => {
     res.status(error.status || 502).json({
       error: error.message || 'Unable to load the grounded live update.',
       provider: 'Google Gemini',
-      model: GEMINI_MODEL,
+      model: error.model || GEMINI_MODEL,
       configured: Boolean(GEMINI_API_KEY)
     });
   }
