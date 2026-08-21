@@ -24,18 +24,59 @@ img{image-rendering:auto}
   .icon-btn:hover,.signin-btn:hover,.mini-refresh:hover:not(:disabled){box-shadow:0 0 0 3px rgba(168,85,247,.08)}
 }
 
-/* Mobile: blur/backdrop filters are expensive on many Android GPUs. Solid translucent
-   surfaces preserve the design while making scroll and touch substantially smoother. */
+/* Mobile: preserve a normal document scroll container. Avoid aggressive containment
+   features that can break scrolling in Android WebView / installed PWAs. */
 @media(max-width:760px){
-  html{scrollbar-gutter:auto;scroll-behavior:auto}
-  body{overscroll-behavior-y:none}
+  html{
+    width:100%;
+    min-height:100%;
+    height:auto!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    scrollbar-gutter:auto;
+    scroll-behavior:auto;
+    overscroll-behavior-y:auto!important;
+    touch-action:pan-y;
+  }
+  body{
+    width:100%;
+    min-height:100%;
+    height:auto!important;
+    overflow-x:hidden!important;
+    overflow-y:auto!important;
+    overscroll-behavior-y:auto!important;
+    touch-action:pan-y;
+    -webkit-overflow-scrolling:touch;
+  }
+  #root{
+    width:100%;
+    min-height:100dvh;
+    height:auto!important;
+    overflow:visible!important;
+    touch-action:pan-y;
+  }
+  main,.page,.content-page,.score-swipe-surface{
+    height:auto!important;
+    max-height:none!important;
+    overflow-y:visible!important;
+    touch-action:pan-y;
+  }
+
+  /* Disable risky viewport-size optimizations on touch devices. */
+  .home-extras,.competition-results,.news-grid,.compact-story-list{
+    content-visibility:visible!important;
+    contain-intrinsic-size:auto!important;
+  }
+  .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{
+    contain:none;
+  }
+
   .topbar,.mobile-score-controls,.competition-toolbar,.competition-tabs-sticky,.detail-toolbar,.match-tabs{
     -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
     background:rgba(9,9,13,.985)!important;
   }
   .profile-drawer,.auth-modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{box-shadow:none!important}
-  .competition-results,.news-grid,.home-extras{contain-intrinsic-size:1px 420px}
   .route-skeleton{padding:12px!important}.route-skeleton-line{width:52%}.route-skeleton-line.wide{width:78%}.route-skeleton-card{height:150px}
   .date-strip,.filters,.competition-filter-scroll,.match-tabs,.competition-tabs{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
   .bottom-nav,.topbar{transform:translateZ(0)}
