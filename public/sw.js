@@ -1,14 +1,1 @@
-const CACHE='ethio-live-v3';
-const CORE=['/','/manifest.json'];
-self.addEventListener('install',event=>event.waitUntil(caches.open(CACHE).then(c=>c.addAll(CORE)).then(()=>self.skipWaiting())));
-self.addEventListener('activate',event=>event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))).then(()=>self.clients.claim())));
-self.addEventListener('fetch',event=>{const url=new URL(event.request.url);if(event.request.method!=='GET'||url.pathname.startsWith('/api/'))return;event.respondWith(fetch(event.request).then(r=>{const copy=r.clone();caches.open(CACHE).then(c=>c.put(event.request,copy));return r}).catch(()=>caches.match(event.request).then(r=>r||caches.match('/'))))});
-self.addEventListener('push',event=>{
-  let data={title:'EthioLiveScores',body:'A new football update is available.',url:'/#scores'};
-  try{data={...data,...event.data.json()}}catch{}
-  event.waitUntil(self.registration.showNotification(data.title,{body:data.body,icon:data.icon||'/icon-192.png',badge:data.badge||'/icon-192.png',tag:data.tag||'ethio-live-update',renotify:true,data:{url:data.url}}));
-});
-self.addEventListener('notificationclick',event=>{
-  event.notification.close();const target=event.notification.data?.url||'/#scores';
-  event.waitUntil(clients.matchAll({type:'window',includeUncontrolled:true}).then(list=>{for(const client of list){if('focus'in client){client.navigate(target);return client.focus()}}return clients.openWindow(target)}));
-});
+const CACHE='ethio-live-v3';const APP_SHELL=['/','/manifest.json'];self.addEventListener('install',e=>{e.waitUntil(caches.open(CACHE).then(c=>c.addAll(APP_SHELL)).catch(()=>{}));self.skipWaiting()});self.addEventListener('activate',e=>{e.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(k=>k!==CACHE).map(k=>caches.delete(k)))));self.clients.claim()});self.addEventListener('fetch',e=>{const r=e.request,u=new URL(r.url);if(r.method!=='GET'||u.pathname.startsWith('/api/'))return;e.respondWith(fetch(r).then(res=>{const copy=res.clone();caches.open(CACHE).then(c=>c.put(r,copy)).catch(()=>{});return res}).catch(()=>caches.match(r).then(hit=>hit||caches.match('/'))))});self.addEventListener('push',e=>{let p={};try{p=e.data?e.data.json():{}}catch{p={body:e.data?.text()||''}}const title=p.title||'EthioLiveScores',options={body:p.body||'New football update',tag:p.tag||p.type||'ethio-live-update',data:{url:p.url||'/'},vibrate:[120,60,120],renotify:true};e.waitUntil(self.registration.showNotification(title,options))});self.addEventListener('notificationclick',e=>{e.notification.close();const target=e.notification.data?.url||'/';e.waitUntil(self.clients.matchAll({type:'window',includeUncontrolled:true}).then(clients=>{for(const client of clients){if('focus' in client&&new URL(client.url).origin===self.location.origin){client.navigate(target);return client.focus()}}return self.clients.openWindow?self.clients.openWindow(target):null}))});

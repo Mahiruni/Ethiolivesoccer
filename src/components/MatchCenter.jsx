@@ -1,7 +1,9 @@
 import { useEffect, useMemo, useState } from 'react';
+import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Clock3, MessageCircle, BarChart3, Send, Radio, ChevronRight } from 'lucide-react';
 import { apiFetch } from '../api';
 import { useAuth } from '../context/AuthContext';
+import { leagueToSlug } from '../data/content';
 
 const demoMatches = [
   {id:1,league_id:1,league_name:'Ethiopian Premier League',home_en:'St. George',away_en:'Ethiopian Coffee',home_score:1,away_score:1,status:'LIVE',current_minute:67,match_date:new Date().toISOString()},
@@ -21,6 +23,7 @@ const teamHue = name => [...String(name)].reduce((a,c)=>(a*31+c.charCodeAt(0))%3
 
 export default function MatchCenter({ onNeedAuth }) {
   const auth = useAuth();
+  const navigate = useNavigate();
   const [matches,setMatches]=useState([]); const [standings,setStandings]=useState([]); const [demo,setDemo]=useState(false);
   const [filter,setFilter]=useState('all'); const [selected,setSelected]=useState(1); const [chat,setChat]=useState([]); const [message,setMessage]=useState('');
   const [poll,setPoll]=useState(null); const [voteBusy,setVoteBusy]=useState(false);
@@ -61,7 +64,7 @@ export default function MatchCenter({ onNeedAuth }) {
     <div className="content-grid">
       <section className="match-column" id="fixtures">
         {Object.entries(groups).map(([league,list],groupIndex)=><section className="league-card" key={league}>
-          <div className="league-head"><div className="league-identity"><span className="league-logo">ET</span><div><b>{league}</b><small>Ethiopia</small></div></div><button>View league <ChevronRight size={14}/></button></div>
+          <div className="league-head"><div className="league-identity"><span className="league-logo">ET</span><div><b>{league}</b><small>Ethiopia</small></div></div><button onClick={()=>navigate(`/competition/${leagueToSlug(league)}`)}>View league <ChevronRight size={14}/></button></div>
           {groupIndex===0 && list.some(isLive) && (()=>{const m=list.find(isLive);return <div className="featured-match" onClick={()=>setSelected(m.id)}>
             <div className="featured-meta"><span className="live-label"><Radio size={13}/> LIVE</span><small>{matchTime(m)} · {m.status}</small></div>
             <div className="scoreboard"><TeamBadge name={m.home_en}/><div className="score-center"><strong>{m.home_score} — {m.away_score}</strong><span>{m.current_minute}′</span></div><TeamBadge name={m.away_en}/></div>
