@@ -4,7 +4,7 @@
   "start_url":"/",
   "scope":"/",
   "background_color":"#061525",
-  "theme_color":"#0B46A8",
+  "theme_color":"#061525",
   "display":"standalone",
   "orientation":"portrait",
   "description":"Live Ethiopian football scores, competitions, bilingual news and match-day community."
