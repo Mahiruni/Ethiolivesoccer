@@ -1,15 +1,25 @@
-/* Performance + polish layer: GPU-light, mobile-first, reduced jank. */
-html{scroll-behavior:smooth;scrollbar-gutter:stable}
-body{-webkit-font-smoothing:antialiased;-moz-osx-font-smoothing:grayscale;text-rendering:optimizeLegibility}
+/* Final stability + responsive layout layer.
+   This file is intentionally authoritative because it loads last. */
+html{
+  scroll-behavior:auto;
+  scrollbar-gutter:stable;
+  overflow-x:hidden;
+  overflow-y:auto;
+}
+body{
+  min-height:100%;
+  overflow-x:hidden;
+  overflow-y:visible;
+  -webkit-font-smoothing:antialiased;
+  -moz-osx-font-smoothing:grayscale;
+  text-rendering:optimizeLegibility;
+}
+#root{min-height:100vh;overflow:visible}
 button,a,input,textarea,select{-webkit-tap-highlight-color:transparent}
 button,a,[role="button"]{transition:background-color .16s ease,border-color .16s ease,color .16s ease,box-shadow .16s ease,opacity .16s ease}
 img{image-rendering:auto}
 
-/* Keep below-the-fold modules cheap until they approach the viewport. */
-.home-extras,.competition-results,.news-grid,.compact-story-list{content-visibility:auto;contain-intrinsic-size:1px 520px}
-.league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{contain:paint}
-
-/* Route-level loading skeleton shown only while a lazy chunk is downloading. */
+/* Route-level loading skeleton */
 .route-skeleton{display:grid;gap:12px;padding-top:22px!important}
 .route-skeleton-line,.route-skeleton-card{position:relative;overflow:hidden;background:#15151c;border:1px solid #22222c;border-radius:12px}
 .route-skeleton-line{height:18px;width:38%}.route-skeleton-line.wide{height:30px;width:62%}
@@ -18,68 +28,135 @@ img{image-rendering:auto}
 @keyframes routeShimmer{to{transform:translateX(100%)}}
 .home-extras-loading{padding-top:0!important}.home-extras-loading .route-skeleton-card{height:110px}
 
-/* Smooth visual feedback without scale/zoom effects. */
 @media(hover:hover) and (pointer:fine){
   .competition-card:hover,.news-card:hover,.match-row:hover,.compact-story:hover{border-color:rgba(168,85,247,.38)}
   .icon-btn:hover,.signin-btn:hover,.mini-refresh:hover:not(:disabled){box-shadow:0 0 0 3px rgba(168,85,247,.08)}
 }
 
-/* Mobile: preserve a normal document scroll container. Avoid aggressive containment
-   features that can break scrolling in Android WebView / installed PWAs. */
+/* ---------------- Desktop homepage ---------------- */
+@media(min-width:1025px){
+  .topbar-inner,.desktop-nav,.page{max-width:1240px!important}
+  .topbar-inner{min-height:68px!important;padding-left:20px!important;padding-right:20px!important}
+  .desktop-nav{height:48px!important;padding:0 20px!important;gap:30px!important}
+  .nav-link{height:48px!important;font-size:11px!important}
+  .live-strip{min-height:38px!important;height:38px!important}
+
+  .page{padding:26px 20px 34px!important}
+  .page-head{align-items:flex-end!important;margin-bottom:18px!important}
+  .page-head h1{font-size:34px!important;line-height:1!important}
+  .page-subtitle{display:block!important;max-width:650px;margin:8px 0 0;color:var(--muted);font-size:11px;line-height:1.55}
+  .match-head-actions{display:flex!important;align-items:center!important;gap:8px!important}
+
+  .mobile-score-controls{position:static!important;margin:0 0 18px!important;padding:0!important;background:transparent!important;border:0!important}
+  .swipe-hint{display:none!important}
+  .date-strip{display:grid!important;grid-template-columns:52px repeat(5,minmax(84px,1fr))!important;gap:9px!important;margin:0 0 10px!important;padding:0!important;overflow:visible!important}
+  .date-card{height:62px!important;border-radius:14px!important}
+  .filters{display:flex!important;gap:8px!important;margin:0!important;padding:0!important;overflow:visible!important;flex-wrap:wrap}
+  .filters button{min-height:38px!important;padding:0 15px!important}
+
+  .content-grid{display:grid!important;grid-template-columns:minmax(0,1fr) 350px!important;gap:20px!important;align-items:start!important;width:100%!important}
+  .match-column{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;min-width:0}
+  .side-column{display:grid!important;grid-template-columns:minmax(0,1fr)!important;gap:16px!important;min-width:0;margin:0!important}
+  .league-card,.side-card,.sponsor-card{border-radius:18px!important}
+  .league-head{min-height:60px!important;padding:12px 15px!important}
+  .featured-match{margin:10px!important;border-radius:16px!important;padding:19px 17px 16px!important}
+  .scoreboard{grid-template-columns:minmax(0,1fr) 112px minmax(0,1fr)!important;gap:12px!important}
+  .big-team{width:62px!important;height:62px!important}
+  .team-badge-wrap b{font-size:11px!important;max-width:160px}
+  .score-center strong{font-size:32px!important}
+  .match-row{min-height:70px!important;grid-template-columns:58px minmax(0,1fr) 42px 18px!important;padding:11px 15px!important}
+  .mini-teams>span{font-size:10px!important}
+
+  /* Desktop should use a real grid, not mobile-style horizontal rails. */
+  .home-extras{display:grid!important;gap:22px!important;padding-top:0!important;padding-bottom:44px!important}
+  .home-section{background:#111117!important;border:1px solid #292934!important;border-radius:20px!important;padding:20px!important;overflow:hidden}
+  .section-title-row{margin-bottom:16px!important;align-items:flex-end!important}
+  .section-title-row h2{font-size:21px!important;line-height:1.08!important;margin-top:5px!important}
+  .competition-scroll{display:grid!important;grid-template-columns:repeat(4,minmax(0,1fr))!important;grid-auto-flow:row!important;grid-auto-columns:auto!important;gap:10px!important;overflow:visible!important;padding:0!important}
+  .competition-scroll .competition-card{width:100%!important;min-height:108px!important}
+  .news-teaser-grid{display:grid!important;grid-template-columns:minmax(0,1.45fr) minmax(290px,.55fr)!important;gap:12px!important}
+  .lead-story{grid-template-columns:190px minmax(0,1fr)!important;min-height:190px!important}
+  .lead-story>div:last-child{padding:18px 18px 18px 0!important;min-width:0}
+  .lead-story h3{font-size:19px!important;line-height:1.16!important}
+  .lead-story p{font-size:10px!important;line-height:1.55!important;display:-webkit-box;-webkit-line-clamp:3;-webkit-box-orient:vertical;overflow:hidden}
+  .mini-story-stack{display:grid!important;grid-template-columns:1fr!important;gap:8px!important}
+  .mini-story{min-height:0!important;padding:11px 12px!important}
+  .mini-story b{font-size:10px!important;line-height:1.3!important;display:-webkit-box;-webkit-line-clamp:2;-webkit-box-orient:vertical;overflow:hidden}
+
+  .bottom-nav{display:none!important}
+}
+
+/* ---------------- Tablet ---------------- */
+@media(min-width:761px) and (max-width:1024px){
+  .page{max-width:940px!important;padding:22px 18px 30px!important}
+  .content-grid{grid-template-columns:1fr!important;gap:16px!important}
+  .side-column{grid-template-columns:repeat(2,minmax(0,1fr))!important;gap:12px!important}
+  .side-column .chat-card{grid-column:1/-1}
+  .competition-scroll{grid-auto-columns:minmax(220px,42vw)!important}
+  .home-extras{gap:18px!important}
+  .news-teaser-grid{grid-template-columns:1fr!important}
+  .mini-story-stack{grid-template-columns:repeat(3,minmax(0,1fr))!important}
+  .bottom-nav{display:none!important}
+}
+
+/* ---------------- Mobile stability ---------------- */
 @media(max-width:760px){
   html{
-    width:100%;
-    min-height:100%;
-    height:auto!important;
-    overflow-x:hidden!important;
-    overflow-y:auto!important;
-    scrollbar-gutter:auto;
-    scroll-behavior:auto;
-    overscroll-behavior-y:auto!important;
-    touch-action:pan-y;
+    width:100%;min-height:100%;height:auto!important;
+    overflow-x:hidden!important;overflow-y:auto!important;
+    scrollbar-gutter:auto;scroll-behavior:auto!important;
+    overscroll-behavior:auto!important;touch-action:pan-y;
   }
   body{
-    width:100%;
-    min-height:100%;
-    height:auto!important;
-    overflow-x:hidden!important;
-    overflow-y:auto!important;
-    overscroll-behavior-y:auto!important;
-    touch-action:pan-y;
+    width:100%;min-height:100%;height:auto!important;
+    overflow-x:hidden!important;overflow-y:visible!important;
+    overscroll-behavior:auto!important;touch-action:pan-y;
     -webkit-overflow-scrolling:touch;
   }
   #root{
-    width:100%;
-    min-height:100dvh;
-    height:auto!important;
-    overflow:visible!important;
-    touch-action:pan-y;
+    width:100%;min-height:100dvh;height:auto!important;
+    overflow:visible!important;touch-action:pan-y;
   }
   main,.page,.content-page,.score-swipe-surface{
-    height:auto!important;
-    max-height:none!important;
-    overflow-y:visible!important;
-    touch-action:pan-y;
+    height:auto!important;max-height:none!important;
+    overflow-y:visible!important;touch-action:pan-y;
   }
 
-  /* Disable risky viewport-size optimizations on touch devices. */
-  .home-extras,.competition-results,.news-grid,.compact-story-list{
-    content-visibility:visible!important;
-    contain-intrinsic-size:auto!important;
+  /* Avoid browser/PWA scroll-lock regressions. */
+  .home-extras,.competition-results,.news-grid,.compact-story-list{content-visibility:visible!important;contain:none!important;contain-intrinsic-size:auto!important}
+  .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{contain:none!important}
+
+  /* Keep only the app header fixed to the top. Nested sticky toolbars were the
+     main source of stacked/jumping layers while scrolling. */
+  .topbar{position:sticky!important;top:0!important;z-index:60!important;transform:none!important;will-change:auto!important}
+  .mobile-score-controls,.competition-toolbar,.detail-toolbar{
+    position:static!important;top:auto!important;z-index:auto!important;
+    transform:none!important;will-change:auto!important;
   }
-  .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{
-    contain:none;
+  .competition-tabs-sticky,.match-tabs{
+    position:sticky!important;top:60px!important;z-index:42!important;
+    transform:none!important;will-change:auto!important;
   }
+  .bottom-nav{transform:none!important;will-change:auto!important}
 
   .topbar,.mobile-score-controls,.competition-toolbar,.competition-tabs-sticky,.detail-toolbar,.match-tabs{
     -webkit-backdrop-filter:none!important;backdrop-filter:none!important;
-    background:rgba(9,9,13,.985)!important;
+    background:rgba(9,9,13,.992)!important;
   }
+  .mobile-score-controls{margin-bottom:12px!important;border-bottom:1px solid #262631!important}
+  .competition-toolbar{margin-top:0!important}
+  .detail-toolbar{margin-top:0!important}
+
   .profile-drawer,.auth-modal{backdrop-filter:none!important;-webkit-backdrop-filter:none!important}
   .league-card,.side-card,.surface-card,.competition-card,.news-card,.sponsor-card{box-shadow:none!important}
+
+  /* Native-feeling scroll: no forced animated scrolling on rails. */
+  .date-strip,.filters,.competition-filter-scroll,.match-tabs,.competition-tabs{
+    scroll-behavior:auto!important;-webkit-overflow-scrolling:touch;
+  }
+  #scores,#community,#fixtures,#standings{scroll-margin-top:72px}
+
   .route-skeleton{padding:12px!important}.route-skeleton-line{width:52%}.route-skeleton-line.wide{width:78%}.route-skeleton-card{height:150px}
-  .date-strip,.filters,.competition-filter-scroll,.match-tabs,.competition-tabs{scroll-behavior:smooth;-webkit-overflow-scrolling:touch}
-  .bottom-nav,.topbar{transform:translateZ(0)}
 }
 
 @media(max-width:390px){
