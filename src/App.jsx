@@ -24,7 +24,7 @@ export default function App(){
 
   useEffect(()=>{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('theme','dark')},[]);
   useEffect(()=>{document.documentElement.lang=lang;localStorage.setItem('lang',lang)},[lang]);
-  useEffect(()=>{if(location.hash){const id=location.hash.slice(1);requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}));}else window.scrollTo({top:0,behavior:'auto'});},[location.pathname,location.hash]);
+  useEffect(()=>{if(location.hash){const id=location.hash.slice(1);requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:'auto',block:'start'}));}else window.scrollTo({top:0,behavior:'auto'});},[location.pathname,location.hash]);
 
   const openProfile=useCallback(()=>user?setProfileOpen(true):setAuthOpen(true),[user]);
   const toggleLang=useCallback(()=>setLang(x=>x==='en'?'am':'en'),[]);
