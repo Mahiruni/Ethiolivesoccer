@@ -1,43 +1,141 @@
-/* Mobile interaction layer — uses only the black / white / electric-purple brand tokens. */
+/* Mobile-first interaction layer — no browser focus zoom, no tap-scale zoom, no horizontal viewport drift. */
 .swipe-hint{display:none}.team-dot img,.tiny-logo-img,.mini-logo-img,.big-team img{display:block;object-fit:contain}.team-dot img{width:100%;height:100%;padding:3px;background:#fff;border-radius:inherit}.score-swipe-surface{touch-action:pan-y}
 
 @media(max-width:760px){
-  html,body{overscroll-behavior-y:contain}
-  body{padding-bottom:calc(78px + env(safe-area-inset-bottom))!important}
+  html{
+    width:100%;max-width:100%;overflow-x:hidden;
+    -webkit-text-size-adjust:100%;text-size-adjust:100%;
+    overscroll-behavior-y:contain;
+  }
+  body,#root{
+    width:100%;max-width:100%;min-width:0;overflow-x:hidden!important;
+    overscroll-behavior-y:contain;
+  }
+  body{padding-bottom:calc(76px + env(safe-area-inset-bottom))!important}
+  *,*::before,*::after{min-width:0}
+  img,svg{max-width:100%}
+
+  /* Prevent double-tap/control zoom and remove the old visual press-zoom. */
+  button,a,[role="button"],input,textarea,select,label{touch-action:manipulation;-webkit-tap-highlight-color:transparent}
+  button:active,a:active,[role="button"]:active,.match-row:active,.featured-match:active,.competition-card:active,.news-card:active{transform:none!important;scale:1!important}
+  input,textarea,select,.field input,.setting-field input,.chat-compose input,.detail-compose input{
+    font-size:16px!important;
+    line-height:1.25!important;
+  }
+
+  /* Mobile app chrome */
+  .topbar{position:sticky!important;top:0!important;z-index:60!important}
+  .topbar-inner{min-height:60px!important;height:60px;padding:0 12px!important;gap:8px!important}
+  .desktop-nav{display:none!important}
+  .live-strip{display:none!important}
+  .brand{gap:8px!important;min-width:0}
+  .brand-mark{width:34px!important;height:34px!important;min-width:34px!important;border-radius:10px!important}
+  .brand-name{font-size:14px!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:148px}
+  .header-actions{gap:6px!important;flex:0 0 auto}
+  .icon-btn,.signin-btn,.profile-chip{min-width:42px!important;height:42px!important;border-radius:12px!important}
+  .icon-btn{padding:0 10px!important}.signin-btn{padding:0 12px!important}.profile-chip{padding:4px!important}
+
+  /* True full-width score workspace */
+  .page{width:100%!important;max-width:100%!important;padding:14px 12px 18px!important;margin:0!important}
   .score-swipe-surface{padding-left:12px!important;padding-right:12px!important}
-  .mobile-score-controls{position:sticky;top:62px;z-index:29;margin:0 -12px 14px;padding:8px 12px 10px;background:rgba(9,9,13,.94);border-bottom:1px solid #262631;backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px)}
-  .swipe-hint{display:flex;align-items:center;justify-content:center;gap:7px;height:23px;color:#8f8f9f;font-size:8px;font-weight:850;letter-spacing:.25px;user-select:none}
+  .page-head{display:grid!important;grid-template-columns:1fr auto!important;align-items:start!important;gap:8px!important;margin-bottom:10px!important}
+  .page-head h1{font-size:24px!important;line-height:1!important;margin-top:3px!important}
+  .page-subtitle{display:none!important}
+  .match-head-actions{display:flex!important;align-items:flex-end!important;gap:5px!important}
+  .connection{max-width:88px!important;overflow:hidden;white-space:nowrap;text-overflow:ellipsis;font-size:8px!important}
+  .mini-refresh{width:42px!important;min-width:42px!important;height:42px!important;min-height:42px!important;padding:0!important}
+  .mini-refresh:not(:disabled){display:grid!important;place-items:center!important}
+  .mini-refresh{font-size:0!important}.mini-refresh svg{width:16px;height:16px}
+
+  /* Sticky, thumb-first day + filter controls */
+  .mobile-score-controls{
+    position:sticky;top:60px;z-index:45;
+    margin:0 -12px 12px;padding:6px 12px 10px;
+    background:rgba(9,9,13,.97);border-bottom:1px solid #262631;
+    backdrop-filter:blur(22px);-webkit-backdrop-filter:blur(22px);
+  }
+  .swipe-hint{display:flex;align-items:center;justify-content:center;gap:6px;height:22px;color:#8f8f9f;font-size:8px;font-weight:850;letter-spacing:.2px;user-select:none;pointer-events:none}
   .swipe-hint b{color:#c084fc;font-weight:950}
-  .date-strip{display:flex!important;gap:8px!important;overflow-x:auto!important;scroll-snap-type:x mandatory;scroll-padding:12px;margin:0 -12px 9px!important;padding:0 12px 3px!important;-webkit-overflow-scrolling:touch}
-  .date-card{flex:0 0 66px!important;min-width:66px;height:58px!important;scroll-snap-align:center;border-radius:14px!important}
-  .date-card.calendar{flex-basis:48px!important;min-width:48px!important}
-  .filters{margin:0 -12px!important;padding:0 12px!important;gap:7px!important;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
-  .filters button{min-height:42px!important;padding:0 16px!important;scroll-snap-align:start;font-size:9px!important}
-  .page-head{margin-bottom:10px!important}
-  .page-head h1{font-size:25px!important}.page-subtitle{max-width:88%;line-height:1.45!important}
-  .match-head-actions{gap:6px!important}.mini-refresh{min-width:42px;min-height:38px}
-  .league-card{border-radius:17px!important;overflow:hidden}
-  .league-head{min-height:58px;padding:10px 12px!important}.league-head>button{min-height:38px;padding:0 2px}
-  .featured-match{margin:9px;border-radius:16px!important;padding:15px 12px 12px!important}
-  .featured-meta{margin-bottom:13px!important}
-  .scoreboard{grid-template-columns:minmax(0,1fr) 78px minmax(0,1fr)!important;gap:5px!important}
-  .big-team{width:55px!important;height:55px!important;border-radius:16px!important;background:#fff!important;padding:3px!important}.big-team img{width:100%;height:100%}
-  .team-badge-wrap b{max-width:108px;white-space:normal;line-height:1.2}
-  .score-center strong{font-size:25px!important;letter-spacing:-1px!important}.score-center span{margin-top:5px!important}
-  .match-actions{gap:6px!important;margin-top:14px!important}.match-actions button{min-height:44px!important;border-radius:12px!important}
-  .match-row{min-height:72px;padding:11px 10px!important;grid-template-columns:45px minmax(0,1fr) 32px 16px!important;gap:7px!important;-webkit-tap-highlight-color:transparent}
-  .match-row:active,.featured-match:active{transform:scale(.985)}
-  .mini-teams>span{font-size:10px!important;gap:7px!important}.mini-logo-img{width:28px!important;height:28px!important;padding:2px;background:#fff;border-radius:8px}
-  .tiny-logo-img{width:25px!important;height:25px!important;padding:2px;background:#fff;border-radius:8px}
-  .side-card{border-radius:17px!important}.side-head{min-height:50px}
-  .poll-grid button{min-height:62px!important}.chat-compose input{min-height:44px!important;font-size:16px!important}.chat-compose button{min-width:44px!important;min-height:44px!important}
-  .bottom-nav{height:calc(64px + env(safe-area-inset-bottom))!important;padding-bottom:env(safe-area-inset-bottom)!important;grid-template-columns:repeat(5,1fr)!important}
-  .bottom-nav button{min-height:60px;-webkit-tap-highlight-color:transparent}.bottom-nav button:active{background:rgba(168,85,247,.08)!important}
-  .profile-drawer{padding-bottom:env(safe-area-inset-bottom)}.profile-tabs button{min-height:64px}.toggle-row{min-height:58px}.team-pick{min-height:60px}.team-dot{overflow:hidden;background:#fff!important}
-  .match-tabs{scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}.match-tabs button{min-height:44px!important;scroll-snap-align:center}
-  .detail-toolbar button{min-height:42px}.detail-compose input{font-size:16px!important;min-height:46px}.detail-compose button{min-width:46px}
+  .date-strip{
+    display:flex!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;
+    scroll-snap-type:x proximity;scroll-padding:12px;margin:0 -12px 8px!important;padding:0 12px 4px!important;
+    -webkit-overflow-scrolling:touch;overscroll-behavior-x:contain;scrollbar-width:none;
+  }
+  .date-strip::-webkit-scrollbar,.filters::-webkit-scrollbar,.match-tabs::-webkit-scrollbar{display:none}
+  .date-card{flex:0 0 64px!important;min-width:64px!important;height:56px!important;scroll-snap-align:center;border-radius:14px!important}
+  .date-card.calendar{flex-basis:46px!important;min-width:46px!important}
+  .filters{display:flex!important;gap:7px!important;overflow-x:auto!important;overflow-y:hidden!important;margin:0 -12px!important;padding:0 12px!important;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch;overscroll-behavior-x:contain}
+  .filters button{flex:0 0 auto!important;min-height:42px!important;padding:0 17px!important;scroll-snap-align:start;font-size:10px!important;border-radius:999px!important}
+
+  /* Match list behaves like a native feed */
+  .content-grid{display:block!important;width:100%!important}
+  .match-column,.side-column{width:100%!important;display:grid!important;grid-template-columns:1fr!important;gap:12px!important}
+  .side-column{margin-top:12px!important}
+  .league-card,.side-card,.sponsor-card{width:100%!important;max-width:100%!important;border-radius:16px!important;overflow:hidden}
+  .league-head{min-height:56px;padding:9px 11px!important}
+  .league-identity{min-width:0!important}.league-identity>div{min-width:0!important}.league-identity b{white-space:nowrap;overflow:hidden;text-overflow:ellipsis;max-width:180px}
+  .league-head>button{min-height:40px!important;padding:0 4px!important;white-space:nowrap}
+  .featured-match{margin:8px!important;border-radius:15px!important;padding:14px 11px 11px!important}
+  .featured-meta{margin-bottom:12px!important}
+  .scoreboard{grid-template-columns:minmax(0,1fr) 74px minmax(0,1fr)!important;gap:4px!important}
+  .big-team{width:52px!important;height:52px!important;border-radius:15px!important;background:#fff!important;padding:3px!important}
+  .big-team img{width:100%;height:100%}
+  .team-badge-wrap{min-width:0!important}.team-badge-wrap b{max-width:104px;white-space:normal;line-height:1.15;font-size:9px!important;overflow-wrap:anywhere}
+  .score-center strong{font-size:23px!important;letter-spacing:-1px!important;white-space:nowrap}.score-center span{margin-top:5px!important}
+  .match-actions{gap:6px!important;margin-top:12px!important}.match-actions button{min-height:44px!important;border-radius:12px!important;font-size:8px!important;padding:0 5px!important}
+  .match-row{width:100%!important;min-height:70px;padding:10px 9px!important;grid-template-columns:43px minmax(0,1fr) 30px 14px!important;gap:7px!important}
+  .match-row>span:first-child{font-size:8px!important}
+  .mini-teams{min-width:0!important}.mini-teams>span{font-size:10px!important;gap:7px!important;min-width:0!important;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+  .mini-logo-img{width:27px!important;height:27px!important;min-width:27px!important;padding:2px;background:#fff;border-radius:8px}
+  .mini-score{font-size:10px!important}.row-chevron{width:14px!important}
+  .tiny-logo-img{width:25px!important;height:25px!important;min-width:25px!important;padding:2px;background:#fff;border-radius:8px}
+
+  /* Secondary modules remain usable instead of desktop-sized */
+  .side-head{min-height:50px!important;padding:10px 12px!important}
+  .standing-row{min-height:45px!important;padding:8px 10px!important}
+  .prediction-box{padding:14px 12px!important}.poll-grid button{min-height:60px!important}
+  .chat-stream{height:min(38vh,300px)!important}.chat-compose{grid-template-columns:minmax(0,1fr) 46px!important;padding:9px!important}.chat-compose input{height:46px!important;min-height:46px!important}.chat-compose button{width:46px!important;min-width:46px!important;height:46px!important;min-height:46px!important}
+  .sponsor-card{padding:12px!important}.sponsor-card button{min-height:42px!important}
+
+  /* Bottom app navigation */
+  .bottom-nav{
+    height:calc(66px + env(safe-area-inset-bottom))!important;
+    padding-bottom:env(safe-area-inset-bottom)!important;
+    grid-template-columns:repeat(5,1fr)!important;
+    z-index:75!important;
+  }
+  .bottom-nav button{min-height:64px!important;gap:4px!important;font-size:9px!important}
+  .bottom-nav button svg{width:20px!important;height:20px!important}
+  .bottom-nav button:active{background:rgba(168,85,247,.08)!important;transform:none!important}
+
+  /* Drawers / auth behave like mobile sheets */
+  .modal-backdrop{padding:0!important;align-items:end!important}.auth-modal{width:100%!important;max-width:100%!important;border-radius:22px 22px 0 0!important;padding:20px 16px calc(18px + env(safe-area-inset-bottom))!important}
+  .profile-drawer{width:100%!important;max-width:100%!important;padding-bottom:env(safe-area-inset-bottom)}
+  .drawer-head{padding:14px 14px!important}.profile-tabs{position:sticky;top:0;z-index:3;background:#111117}.profile-tabs button{min-height:60px!important}.drawer-body{padding:14px!important}
+  .toggle-row{min-height:58px!important}.team-pick{min-height:60px!important}.team-dot{overflow:hidden;background:#fff!important}
+
+  /* Match details */
+  .match-detail-page{padding:12px!important}
+  .detail-toolbar{position:sticky;top:60px;z-index:42;background:rgba(9,9,13,.96);padding:6px 0;margin:-2px 0 8px!important;backdrop-filter:blur(18px)}
+  .detail-toolbar button{min-height:42px!important}
+  .match-hero{border-radius:18px!important;padding:14px 10px!important}
+  .hero-scoreboard{grid-template-columns:minmax(0,1fr) 80px minmax(0,1fr)!important;gap:4px!important;padding:20px 0 15px!important}
+  .hero-team-logo{width:50px!important;height:50px!important;border-radius:14px!important}.hero-team h2{font-size:9px!important;max-width:105px;overflow-wrap:anywhere}.hero-score strong{font-size:27px!important}.hero-score small{display:none!important}
+  .hero-meta{gap:8px!important}.hero-meta span{font-size:7px!important;max-width:100%;overflow-wrap:anywhere}
+  .match-tabs{position:sticky;top:108px;z-index:40;background:#09090d;margin:0 -12px 10px!important;padding:7px 12px!important;display:flex!important;overflow-x:auto!important;scroll-snap-type:x proximity;-webkit-overflow-scrolling:touch}
+  .match-tabs button{min-height:42px!important;scroll-snap-align:center;flex:0 0 auto!important}
+  .detail-layout{display:block!important}.detail-main,.detail-side{width:100%!important}.detail-side{margin-top:12px!important}.quick-card{position:static!important}
+  .detail-compose{grid-template-columns:minmax(0,1fr) 46px!important}.detail-compose input{font-size:16px!important;min-height:46px!important}.detail-compose button{min-width:46px!important}
+  .lineup-grid{grid-template-columns:1fr!important}.lineup-team+.lineup-team{border-left:0!important;border-top:1px solid var(--line)!important}
+  .article-head h1{font-size:29px!important}.article-body{font-size:16px!important;line-height:1.65!important}
+
+  /* Anything wide must scroll internally, never widen the viewport. */
+  .full-table,.stats-list,.table-head,.standing-row,.article-shell,.competition-layout,.news-grid,.competition-grid{max-width:100%!important}
 }
 
-@media(max-width:420px){
-  .brand-name{font-size:14px!important}.scoreboard{grid-template-columns:minmax(0,1fr) 70px minmax(0,1fr)!important}.big-team{width:50px!important;height:50px!important}.team-badge-wrap b{font-size:9px!important}.score-center strong{font-size:23px!important}.match-actions button{font-size:8px!important}
+@media(max-width:390px){
+  .brand-name{max-width:122px!important;font-size:13px!important}
+  .scoreboard{grid-template-columns:minmax(0,1fr) 66px minmax(0,1fr)!important}
+  .big-team{width:48px!important;height:48px!important}.score-center strong{font-size:21px!important}
+  .match-actions button{font-size:7px!important}.date-card{flex-basis:61px!important;min-width:61px!important}
 }
