@@ -1,0 +1,10 @@
+{
+  "short_name": "EthioScores",
+  "name": "EthioLiveScores Community Portal",
+  "start_url": "/",
+  "background_color": "#09100d",
+  "theme_color": "#10B981",
+  "display": "standalone",
+  "orientation": "portrait",
+  "icons": []
+}
