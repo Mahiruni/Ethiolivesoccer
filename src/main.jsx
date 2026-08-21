@@ -5,7 +5,7 @@ import App from './App';
 import { AuthProvider } from './context/AuthContext';
 import './styles.css';
 import './upgrade.css';
-import './brand-purple.css';
+import './brand.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>

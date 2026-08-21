@@ -1,5 +1,5 @@
 import { useState } from 'react';
-import { X, Mail, LockKeyhole, UserRound, ShieldCheck } from 'lucide-react';
+import { X, Mail, LockKeyhole, UserRound, ShieldCheck, Zap } from 'lucide-react';
 import { useAuth } from '../context/AuthContext';
 
 export default function AuthModal({ open, onClose }) {
@@ -24,7 +24,7 @@ export default function AuthModal({ open, onClose }) {
     <div className="modal-backdrop" onMouseDown={(e) => e.target === e.currentTarget && onClose()}>
       <section className="auth-modal" role="dialog" aria-modal="true">
         <button className="modal-close" onClick={onClose}><X size={18}/></button>
-        <div className="auth-brand"><span className="brand-mark">⚽</span><div><b>EthioLiveScores</b><small>Match-day account</small></div></div>
+        <div className="auth-brand"><span className="brand-mark"><Zap size={20} strokeWidth={2.8}/></span><div><b>EthioLiveScores</b><small>Match-day account</small></div></div>
         <div className="auth-tabs">
           <button className={mode === 'login' ? 'active' : ''} onClick={() => { setMode('login'); setError(''); }}>Sign in</button>
           <button className={mode === 'register' ? 'active' : ''} onClick={() => { setMode('register'); setError(''); }}>Create account</button>

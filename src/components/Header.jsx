@@ -1,4 +1,4 @@
-import { Bell, Languages, UserRound } from 'lucide-react';
+import { Bell, Languages, UserRound, Zap } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import Avatar from './Avatar';
 import { useAuth } from '../context/AuthContext';
@@ -9,7 +9,7 @@ export default function Header({ lang, onToggleLang, onAuth, onProfile }) {
     <header className="topbar">
       <div className="topbar-inner">
         <Link className="brand" to="/" aria-label="EthioLiveScores home">
-          <span className="brand-mark">⚽</span>
+          <span className="brand-mark"><Zap size={20} strokeWidth={2.8}/></span>
           <span className="brand-name">Ethio<span>Live</span>Scores</span>
         </Link>
         <div className="header-actions">
@@ -25,6 +25,6 @@ export default function Header({ lang, onToggleLang, onAuth, onProfile }) {
         {user&&<button className="nav-link nav-button" onClick={onProfile}>My profile</button>}
       </nav>
     </header>
-    <div className="live-strip"><span className="live-dot"/> LIVE NOW <strong>EthioLiveScores</strong><span className="ticker-text">Ethiopian football, one screen.</span></div>
+    <div className="live-strip"><span className="live-dot"/> LIVE NOW <strong>EthioLiveScores</strong><span className="ticker-text">Live football. Zero clutter.</span></div>
   </>;
 }

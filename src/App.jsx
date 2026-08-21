@@ -16,14 +16,13 @@ export default function App(){
   const { user }=useAuth();
   const [authOpen,setAuthOpen]=useState(false);const [profileOpen,setProfileOpen]=useState(false);
   const [lang,setLang]=useState(localStorage.getItem('lang')||'en');
-  const [dark,setDark]=useState(()=>localStorage.getItem('theme')==='dark'||(!localStorage.getItem('theme')&&matchMedia('(prefers-color-scheme: dark)').matches));
   const location=useLocation();
-  useEffect(()=>{document.documentElement.classList.toggle('dark',dark);localStorage.setItem('theme',dark?'dark':'light')},[dark]);
+  useEffect(()=>{document.documentElement.classList.add('dark');document.documentElement.style.colorScheme='dark';localStorage.setItem('theme','dark')},[]);
   useEffect(()=>{document.documentElement.lang=lang;localStorage.setItem('lang',lang)},[lang]);
   useEffect(()=>{if(location.hash){const id=location.hash.slice(1);requestAnimationFrame(()=>document.getElementById(id)?.scrollIntoView({behavior:'smooth',block:'start'}));}else window.scrollTo({top:0,behavior:'auto'});},[location.pathname,location.hash]);
   const openProfile=()=>user?setProfileOpen(true):setAuthOpen(true);const toggleLang=()=>setLang(x=>x==='en'?'am':'en');const needAuth=()=>setAuthOpen(true);
   return <>
-    <Header dark={dark} onToggleTheme={()=>setDark(x=>!x)} lang={lang} onToggleLang={toggleLang} onAuth={needAuth} onProfile={openProfile}/>
+    <Header lang={lang} onToggleLang={toggleLang} onAuth={needAuth} onProfile={openProfile}/>
     <Routes>
       <Route path="/" element={<HomePage lang={lang} onNeedAuth={needAuth}/>}/>
       <Route path="/match/:id" element={<MatchDetails onNeedAuth={needAuth}/>}/>

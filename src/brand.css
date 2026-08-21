@@ -1,0 +1,243 @@
+/* EthioLiveScores — single reference-led brand: black, white and electric purple only. */
+:root,
+html.dark{
+  color-scheme:dark;
+  --bg:#09090d;
+  --surface:#111117;
+  --surface2:#17171f;
+  --surface3:#1d1d26;
+  --text:#f7f7fb;
+  --muted:#9b9bab;
+  --line:#2b2b36;
+  --brand:#8b5cf6;
+  --brand2:#a855f7;
+  --brand3:#c084fc;
+  --soft:#21182f;
+  --live:#ff4d5f;
+  --amber:#a855f7;
+  --blue-black:#09090d;
+  --blue-black-2:#111117;
+  --yellow:#8b5cf6;
+  --yellow2:#a855f7;
+  --yellow-soft:#21182f;
+  --purple:#8b5cf6;
+  --purple-2:#a855f7;
+  --purple-3:#c084fc;
+  --purple-soft:#21182f;
+  --purple-glow:0 0 34px rgba(168,85,247,.36);
+  --shadow:0 18px 54px rgba(0,0,0,.38);
+  --r:18px;
+  --max:1180px;
+}
+
+html{background:#09090d;color-scheme:dark;scroll-behavior:smooth}
+body{
+  background:
+    radial-gradient(circle at 73% -10%,rgba(168,85,247,.18),transparent 30rem),
+    radial-gradient(circle at 6% 6%,rgba(124,58,237,.10),transparent 26rem),
+    #09090d!important;
+  color:#f7f7fb!important;
+}
+::selection{background:rgba(168,85,247,.45);color:#fff}
+
+h1,h2,h3,.brand-name,.score-center strong,.hero-score strong,.article-visual>span{
+  font-family:"Arial Narrow","Roboto Condensed","Helvetica Neue",Arial,sans-serif;
+  font-stretch:condensed;
+}
+
+/* Global interaction language */
+button,a,input{transition:border-color .18s ease,background-color .18s ease,color .18s ease,box-shadow .18s ease,transform .18s ease,filter .18s ease}
+button:focus-visible,a:focus-visible,input:focus-visible{outline:2px solid #a855f7!important;outline-offset:2px}
+button:active,.competition-card:active,.news-card:active,.match-row:active{transform:scale(.985)}
+::-webkit-scrollbar{width:8px;height:8px}
+::-webkit-scrollbar-track{background:#0b0b10}
+::-webkit-scrollbar-thumb{background:#372543;border-radius:999px}
+::-webkit-scrollbar-thumb:hover{background:#5b3272}
+
+/* App chrome */
+.topbar,.bottom-nav{
+  background:rgba(9,9,13,.93)!important;
+  border-color:#262631!important;
+  backdrop-filter:blur(22px)!important;
+  -webkit-backdrop-filter:blur(22px)!important;
+}
+.topbar{box-shadow:0 8px 28px rgba(0,0,0,.18)}
+.brand-mark{
+  color:#fff!important;
+  background:linear-gradient(145deg,#6d28d9,#9333ea 56%,#c084fc)!important;
+  border:1px solid rgba(216,180,254,.42)!important;
+  box-shadow:0 0 24px rgba(168,85,247,.44)!important;
+}
+.brand-name{color:#fff!important;font-weight:950!important;letter-spacing:-.9px!important;text-transform:uppercase}
+.brand-name span{color:#bc73ff!important;text-shadow:0 0 20px rgba(168,85,247,.64)}
+.icon-btn,.profile-chip,.date-card,.filters button,.competition-tabs button,.news-filters button,.match-tabs button,.article-actions button,.mini-refresh,.detail-tools button,.back-link,.secondary-btn{
+  background:#15151c!important;
+  border-color:#2b2b37!important;
+  color:#d7d7e2!important;
+}
+.icon-btn:hover,.profile-chip:hover,.date-card:hover,.filters button:hover,.competition-tabs button:hover,.news-filters button:hover,.match-tabs button:hover,.article-actions button:hover,.mini-refresh:hover,.detail-tools button:hover,.back-link:hover,.secondary-btn:hover{
+  border-color:#8b5cf6!important;
+  color:#fff!important;
+  box-shadow:0 0 0 3px rgba(139,92,246,.10)!important;
+}
+.signin-btn,.primary-btn,.chat-compose button,.detail-compose button,.push-card button,.push-toggle-btn,.sponsor-card button,.detail-error button{
+  background:linear-gradient(135deg,#7c3aed,#a855f7 62%,#c084fc)!important;
+  color:#fff!important;
+  border-color:transparent!important;
+  box-shadow:0 8px 28px rgba(168,85,247,.28)!important;
+}
+.signin-btn:hover,.primary-btn:hover,.chat-compose button:hover,.detail-compose button:hover,.push-card button:hover,.push-toggle-btn:hover,.sponsor-card button:hover,.detail-error button:hover{
+  filter:brightness(1.09);
+  box-shadow:var(--purple-glow)!important;
+}
+.nav-link{color:#9b9bab!important}
+.nav-link:hover{color:#fff!important}
+.nav-link.active,.nav-link.active-page,.bottom-nav button.active,.text-link,.article-meta a,.league-head>button,.eyebrow,.group-label>svg,.card-heading>svg,.metric-card>span{color:#bd7cff!important}
+.nav-link.active:after{background:linear-gradient(90deg,#7c3aed,#c084fc)!important;box-shadow:0 0 14px rgba(168,85,247,.62)!important}
+
+.live-strip{
+  background:linear-gradient(90deg,#07070b,#15101d 55%,#09090d)!important;
+  color:#d8d8e3!important;
+  border-bottom:1px solid #252530!important;
+}
+.live-strip strong{color:#c084fc!important;text-shadow:0 0 16px rgba(168,85,247,.48)}
+.live-dot,.live-chat span{background:#ff4d5f!important}
+.connection,.data-pill{color:#a8a8b8!important}
+.connection span,.connection.demo span,.data-pill span,.data-pill.demo span{background:#a855f7!important;box-shadow:0 0 12px rgba(168,85,247,.56)!important}
+
+/* Shared surfaces */
+.league-card,.side-card,.surface-card,.detail-card,.article-head,.news-card,.lead-story,.mini-story,.competition-card,.push-card,.auth-modal,.profile-drawer,.drawer-panel,.toggle-row,.team-pick,.prediction-item{
+  background:#111117!important;
+  border-color:#292934!important;
+  box-shadow:var(--shadow)!important;
+}
+.league-card:hover,.surface-card:hover,.competition-card:hover,.news-card:hover,.mini-story:hover{border-color:rgba(168,85,247,.44)!important}
+.table-head,.full-table-row.head,.full-table-head,.stats-head,.metric-card,.match-actions button,.poll-grid button,.detail-poll button,.field,.chat-compose input,.detail-compose input,.auth-tabs,.profile-tabs button,.setting-field input,.lineup-title>span{
+  background:#17171f!important;
+  border-color:#2b2b37!important;
+  color:#f7f7fb!important;
+}
+
+/* Brand hero language from the supplied reference */
+.sponsor-card,.profile-hero,.content-hero,.competition-hero,.hub-hero,.story-art,.news-card-art,.article-visual,.story-visual,.news-art,.match-hero{
+  background:
+    radial-gradient(circle at 78% 14%,rgba(192,132,252,.24),transparent 20rem),
+    linear-gradient(135deg,#0a0a0f 0%,#17101f 56%,#28103f 100%)!important;
+  border-color:rgba(168,85,247,.36)!important;
+  box-shadow:0 18px 56px rgba(0,0,0,.38),0 0 34px rgba(124,58,237,.13)!important;
+}
+.content-hero:after,.match-hero:after,.article-visual:before{border-color:rgba(192,132,252,.12)!important}
+.content-hero .eyebrow,.hub-hero>div>span{color:#c084fc!important;text-shadow:0 0 16px rgba(168,85,247,.46)}
+.content-hero p,.competition-hero-copy p,.hub-hero p,.newsroom-badge small,.hero-meta,.hero-round{color:#c7c7d3!important}
+.content-hero h1,.competition-hero-copy h1,.hub-hero h1,.match-hero h1{letter-spacing:-1.35px!important;text-transform:uppercase}
+
+/* Emblems and generated identity are now purple-only */
+.league-logo,.competition-badge,.competition-hero-mark,.hub-hero-icon,.push-icon,.team-dot,.competition-emblem,.big-team,.mini-teams i,.tiny-team,.avatar,.detail-chat-row>span{
+  background:linear-gradient(145deg,#6d28d9,#9333ea 56%,#c084fc)!important;
+  color:#fff!important;
+  border-color:rgba(216,180,254,.38)!important;
+  box-shadow:0 0 18px rgba(168,85,247,.20)!important;
+}
+.competition-card,.competition-emblem{--accent:#a855f7!important}
+.league-logo img,.big-team img,.mini-logo-img,.tiny-logo-img,.hero-team-logo img,.lineup-title img,.full-table-row img{background:#fff!important;border-radius:inherit}
+.hero-team-logo{background:#fff!important;color:#121217!important;box-shadow:0 12px 34px rgba(0,0,0,.36),0 0 24px rgba(168,85,247,.14)!important}
+
+/* Match-center spotlight card: white + purple glow from the reference */
+.featured-match{
+  background:#f7f7fb!important;
+  color:#111116!important;
+  border:1px solid #a855f7!important;
+  box-shadow:0 0 0 1px rgba(192,132,252,.18),0 0 34px rgba(168,85,247,.28),0 18px 46px rgba(0,0,0,.22)!important;
+}
+.featured-match .featured-meta small,.featured-match .team-badge-wrap b{color:#35353f!important}
+.featured-match .score-center strong{color:#101015!important}
+.featured-match .score-center span{background:#ede1ff!important;color:#7c3aed!important}
+.featured-match .match-actions button{background:#fff!important;border-color:#d8d8e2!important;color:#24242d!important}
+.featured-match .match-actions button:hover{border-color:#a855f7!important;color:#7c3aed!important;box-shadow:0 0 0 3px rgba(168,85,247,.10)!important}
+.featured-match .big-team{border-color:#fff!important}
+.live-label,.match-row .live-time,.fixture-live,.hero-score>b.is-live{color:#ff4d5f!important}
+
+/* Active pills and selections */
+.filters button.active,.news-filters button.active,.profile-tabs button.active,.competition-tabs button.active,.match-tabs button.active,html.dark .match-tabs button.active,.poll-grid button.active,.detail-poll button.active,.team-pick.active,.auth-tabs button.active{
+  background:linear-gradient(135deg,rgba(124,58,237,.24),rgba(168,85,247,.15))!important;
+  color:#d8b4fe!important;
+  border-color:#8b5cf6!important;
+  box-shadow:inset 0 0 0 1px rgba(216,180,254,.08),0 0 22px rgba(124,58,237,.12)!important;
+}
+.date-card.active{
+  background:linear-gradient(135deg,#7c3aed,#a855f7)!important;
+  border-color:#a855f7!important;
+  color:#fff!important;
+  box-shadow:0 8px 24px rgba(168,85,247,.28)!important;
+}
+.date-card.active small{color:#f0e7ff!important}
+.story-category,.demo-label,.editorial-note,.pick-badge,.chat-avatar,.event-icon{
+  background:#21182f!important;
+  color:#d8b4fe!important;
+  border-color:rgba(168,85,247,.28)!important;
+}
+.pick-badge.home,.pick-badge.draw,.pick-badge.away{background:#21182f!important;color:#d8b4fe!important}
+.toggle-row input:checked+.switch{background:#8b5cf6!important}
+.switch{background:#32323c!important}
+
+/* Match detail system */
+.hero-league,.hero-score strong span,.source-badge.live-source,.minute-chip,.timeline-minute,.player-row span,.h2h-list strong,.detail-poll span,.quick-grid svg,.module-empty svg,.detail-error svg{color:#c084fc!important}
+.source-badge{background:rgba(255,255,255,.06)!important;border-color:rgba(255,255,255,.15)!important;color:#d0d0dc!important}
+.source-badge.live-source{border-color:rgba(168,85,247,.48)!important;background:rgba(168,85,247,.13)!important}
+.inline-warning{border-color:rgba(168,85,247,.35)!important;background:rgba(168,85,247,.09)!important}
+.inline-warning svg{color:#c084fc!important}
+.toast-note{background:#111117!important;border-color:rgba(168,85,247,.52)!important;box-shadow:0 12px 35px rgba(0,0,0,.40),0 0 24px rgba(168,85,247,.18)!important}
+.timeline-node{background:#a855f7!important;border-color:#1a1024!important;box-shadow:0 0 13px rgba(168,85,247,.52)!important}
+.stat-bars i{background:linear-gradient(90deg,#7c3aed,#9f67ff)!important}
+.stat-bars i:last-child{background:linear-gradient(90deg,#a855f7,#c084fc)!important}
+.detail-compose input:focus,.field:focus-within,.setting-field input:focus{border-color:#8b5cf6!important;box-shadow:0 0 0 3px rgba(139,92,246,.12)!important}
+.quick-card{background:#111117!important}
+.status-dot.live{background:#ff4d5f!important;box-shadow:0 0 0 4px rgba(255,77,95,.12)!important}
+
+/* News, competitions and editorial */
+.competition-hero-mark,.newsroom-badge,.story-visual span,.news-art span{
+  background:linear-gradient(135deg,#7c3aed,#a855f7)!important;
+  color:#fff!important;
+  border-color:rgba(216,180,254,.36)!important;
+}
+.newsroom-badge{background:rgba(168,85,247,.12)!important}
+.story-art,.news-card-art,.article-visual{color:#d8b4fe!important}
+.article-visual strong,.article-visual small{color:#fff!important}
+.article-body{color:#e8e8ef!important}
+.muted-copy,.competition-card-copy p,.news-card-body p,.lead-story p,.article-head>p,.article-meta,.data-card p,.empty-state,.module-empty p,.panel-intro p,.push-copy small{color:#9f9faf!important}
+.compact-story:hover,.competition-fixture:hover,.full-table-row:not(.head):hover{background:#17171f!important}
+
+/* Profiles, alerts and forms */
+.modal-backdrop,.drawer-backdrop{background:rgba(4,4,7,.80)!important;backdrop-filter:blur(11px)!important}
+.auth-modal{border-color:rgba(168,85,247,.34)!important;box-shadow:0 30px 90px rgba(0,0,0,.46),0 0 38px rgba(124,58,237,.12)!important}
+.auth-brand .brand-mark{box-shadow:0 0 26px rgba(168,85,247,.40)!important}
+.form-error{background:rgba(255,77,95,.10)!important;border-color:rgba(255,77,95,.30)!important;color:#ff9aa6!important}
+.logout-btn{background:rgba(255,77,95,.08)!important;border-color:rgba(255,77,95,.24)!important;color:#ff8f9d!important}
+.profile-hero{color:#fff!important}
+.push-panel{background:linear-gradient(135deg,#15151c,#20162b)!important;border-color:#343440!important}
+.push-panel.active{border-color:#8b5cf6!important;box-shadow:0 0 24px rgba(168,85,247,.10)!important}
+.drawer-toast{background:#21182f!important;color:#d8b4fe!important}
+
+/* Legacy ExploreHub also inherits the same brand */
+.hub-page{color:#f7f7fb!important}
+.hub-section-title small,.competition-copy span,.lead-copy small,.news-card small{color:#9b9bab!important}
+.competition-copy h3,.lead-copy h2,.news-card h3{color:#f7f7fb!important}
+.competition-copy p,.lead-copy p,.news-card p,.notification-roadmap p{color:#9b9bab!important}
+.competition-card button,.lead-copy button,.news-card button{color:#c084fc!important;background:transparent!important;border-color:transparent!important}
+.alert-list article,.notification-roadmap{background:#111117!important;border-color:#292934!important}
+.alert-list svg,.notification-roadmap>svg{color:#c084fc!important}
+.push-message{color:#d8b4fe!important}
+
+/* Remove any remaining retired blue/yellow/green paint */
+.sponsor-card small,.competition-badge,.competition-hero-mark,.hub-hero-icon,.push-icon,.team-dot,.league-logo{color:#fff!important}
+.data-pill.demo span,.connection.demo span{background:#a855f7!important}
+.match-row:hover,.h2h-list button:hover{background:#17171f!important}
+
+@media(max-width:760px){
+  .topbar-inner{min-height:62px}
+  .brand-mark{width:36px!important;height:36px!important;border-radius:11px!important}
+  .brand-name{font-size:16px!important}
+  .bottom-nav{background:rgba(9,9,13,.97)!important}
+  .content-hero,.competition-hero,.hub-hero,.match-hero{border-radius:20px!important}
+  .featured-match{border-radius:0!important}
+}
