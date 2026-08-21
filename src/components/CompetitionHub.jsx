@@ -1,10 +1,18 @@
 import { useMemo, useState } from 'react';
 import { Link } from 'react-router-dom';
-import { ArrowRight, Globe2, Search, Shield, Trophy } from 'lucide-react';
+import { ArrowRight, Flag, Globe2, Search, Shield, Trophy } from 'lucide-react';
 import { competitions } from '../data/content';
+import CompetitionVisual, { CompetitionIcon } from './CompetitionVisual';
 
 const filters=['All','Domestic','CAF','National','International'];
 const haptic=()=>{try{navigator.vibrate?.(7)}catch{}};
+
+function FilterIcon({name}){
+  if(name==='Domestic')return <Shield size={14}/>;
+  if(name==='CAF'||name==='International')return <Globe2 size={14}/>;
+  if(name==='National')return <Flag size={14}/>;
+  return <Trophy size={14}/>;
+}
 
 export default function CompetitionHub({lang='en',compact=false}){
   const [filter,setFilter]=useState('All');
@@ -27,7 +35,7 @@ export default function CompetitionHub({lang='en',compact=false}){
 
     <section className="competition-toolbar" aria-label="Competition filters">
       <label className="competition-search"><Search size={17}/><input value={query} onChange={e=>setQuery(e.target.value)} placeholder={lang==='am'?'ውድድር ፈልግ…':'Search competitions…'} aria-label="Search competitions"/>{query&&<button type="button" onClick={()=>setQuery('')} aria-label="Clear search">×</button>}</label>
-      <div className="competition-filter-scroll">{filters.map(item=><button key={item} className={filter===item?'active':''} onClick={()=>{haptic();setFilter(item)}}>{item}</button>)}</div>
+      <div className="competition-filter-scroll">{filters.map(item=><button key={item} className={filter===item?'active':''} onClick={()=>{haptic();setFilter(item)}}><FilterIcon name={item}/><span>{item}</span></button>)}</div>
     </section>
 
     <div className="competition-directory-head"><div><b>{filter==='All'?'All competitions':filter}</b><small>{visible.length} available</small></div>{filter!=='All'&&<button onClick={()=>setFilter('All')}>Clear filter</button>}</div>
@@ -36,5 +44,4 @@ export default function CompetitionHub({lang='en',compact=false}){
   </main>
 }
 
-function TierIcon({tier}){if(tier==='International')return <Globe2 size={16}/>;if(tier==='National')return <Shield size={16}/>;return <Trophy size={16}/>}
-function Card({item,lang,compact}){return <Link onClick={haptic} className={`competition-card ${compact?'compact':''}`} to={`/competition/${item.slug}`}><div className="competition-badge">{item.code}</div><div className="competition-card-copy"><span className="competition-card-tier"><TierIcon tier={item.tier}/>{item.tier}</span><small>{item.scope} · {item.type}</small><b>{lang==='am'?item.nameAm:item.name}</b>{!compact&&<p>{lang==='am'?item.descriptionAm:item.description}</p>}</div><span className="competition-card-action"><ArrowRight size={17}/></span></Link>}
+function Card({item,lang,compact}){return <Link onClick={haptic} className={`competition-card ${compact?'compact':''}`} to={`/competition/${item.slug}`}><CompetitionVisual item={item} className="competition-badge"/><div className="competition-card-copy"><span className="competition-card-tier"><CompetitionIcon item={item} size={14}/>{item.tier}</span><small>{item.scope} · {item.type}</small><b>{lang==='am'?item.nameAm:item.name}</b>{!compact&&<p>{lang==='am'?item.descriptionAm:item.description}</p>}</div><span className="competition-card-action"><ArrowRight size={17}/></span></Link>}
