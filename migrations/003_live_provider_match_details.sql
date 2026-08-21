@@ -5,11 +5,15 @@ ALTER TABLE leagues ADD COLUMN IF NOT EXISTS provider_name VARCHAR(40);
 ALTER TABLE leagues ADD COLUMN IF NOT EXISTS provider_league_id INT;
 ALTER TABLE leagues ADD COLUMN IF NOT EXISTS logo_url TEXT;
 ALTER TABLE leagues ADD COLUMN IF NOT EXISTS season VARCHAR(20);
-CREATE UNIQUE INDEX IF NOT EXISTS ux_leagues_provider_league_id ON leagues(provider_league_id) WHERE provider_league_id IS NOT NULL;
+-- PostgreSQL UNIQUE indexes allow multiple NULLs. A non-partial unique index lets
+-- INSERT ... ON CONFLICT(provider_league_id) reliably infer the conflict target.
+DROP INDEX IF EXISTS ux_leagues_provider_league_id;
+CREATE UNIQUE INDEX ux_leagues_provider_league_id ON leagues(provider_league_id);
 
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS provider_team_id INT;
 ALTER TABLE teams ADD COLUMN IF NOT EXISTS logo_url TEXT;
-CREATE UNIQUE INDEX IF NOT EXISTS ux_teams_provider_team_id ON teams(provider_team_id) WHERE provider_team_id IS NOT NULL;
+DROP INDEX IF EXISTS ux_teams_provider_team_id;
+CREATE UNIQUE INDEX ux_teams_provider_team_id ON teams(provider_team_id);
 
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS provider_fixture_id BIGINT;
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS round VARCHAR(120);
@@ -20,7 +24,8 @@ ALTER TABLE matches ADD COLUMN IF NOT EXISTS timezone VARCHAR(80);
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS home_halftime INT;
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS away_halftime INT;
 ALTER TABLE matches ADD COLUMN IF NOT EXISTS provider_updated_at TIMESTAMP WITH TIME ZONE;
-CREATE UNIQUE INDEX IF NOT EXISTS ux_matches_provider_fixture_id ON matches(provider_fixture_id) WHERE provider_fixture_id IS NOT NULL;
+DROP INDEX IF EXISTS ux_matches_provider_fixture_id;
+CREATE UNIQUE INDEX ux_matches_provider_fixture_id ON matches(provider_fixture_id);
 CREATE INDEX IF NOT EXISTS idx_matches_date_status ON matches(match_date, status);
 
 ALTER TABLE match_events ADD COLUMN IF NOT EXISTS provider_event_id VARCHAR(120);
