@@ -3,8 +3,8 @@
   "name":"EthioLiveScores Community Football",
   "start_url":"/",
   "scope":"/",
-  "background_color":"#061525",
-  "theme_color":"#061525",
+  "background_color":"#09090d",
+  "theme_color":"#09090d",
   "display":"standalone",
   "orientation":"portrait",
   "description":"Live Ethiopian football scores, competitions, bilingual news and match-day community."
