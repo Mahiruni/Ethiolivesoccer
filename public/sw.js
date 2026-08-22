@@ -1,5 +1,5 @@
-const CACHE='ethio-live-fast-v6';
-const APP_SHELL=['/','/manifest.json'];
+const CACHE='ethio-live-fast-v7';
+const APP_SHELL=['/manifest.json'];
 
 self.addEventListener('install',event=>{
   event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));
@@ -17,6 +17,11 @@ self.addEventListener('fetch',event=>{
   const url=new URL(request.url);
   if(url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
 
+  if(request.mode==='navigate'){
+    event.respondWith(fetch(request,{cache:'no-store'}));
+    return;
+  }
+
   if(url.pathname.startsWith('/assets/')){
     event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{
       if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
@@ -25,21 +30,10 @@ self.addEventListener('fetch',event=>{
     return;
   }
 
-  if(request.mode==='navigate'){
-    event.respondWith(fetch(request).then(response=>{
-      if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
-      return response;
-    }).catch(()=>caches.match(request).then(cached=>cached||caches.match('/'))));
-    return;
-  }
-
-  event.respondWith(caches.match(request).then(cached=>{
-    const network=fetch(request).then(response=>{
-      if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
-      return response;
-    }).catch(()=>cached);
-    return cached||network;
-  }));
+  event.respondWith(fetch(request).then(response=>{
+    if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
+    return response;
+  }).catch(()=>caches.match(request)));
 });
 
 self.addEventListener('push',event=>{
