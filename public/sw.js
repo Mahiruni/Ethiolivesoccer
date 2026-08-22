@@ -1,4 +1,4 @@
-const CACHE='ethio-live-fast-v5';
+const CACHE='ethio-live-fast-v6';
 const APP_SHELL=['/','/manifest.json'];
 
 self.addEventListener('install',event=>{
