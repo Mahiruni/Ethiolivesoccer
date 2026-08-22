@@ -16,6 +16,14 @@ function ttlFor(path,method){
   return 0;
 }
 
+function timeoutFor(path,method){
+  if(method!=='GET')return 15000;
+  if(path.startsWith('/matches')||path.startsWith('/standings'))return 6500;
+  if(path==='/provider/status')return 3500;
+  if(path.startsWith('/news'))return 7000;
+  return 9000;
+}
+
 export function clearApiCache(prefix=''){
   for(const key of memoryCache.keys())if(!prefix||key.includes(prefix))memoryCache.delete(key);
 }
@@ -36,19 +44,41 @@ export async function apiFetch(path,options={}){
   }
 
   const request=(async()=>{
-    const response=await fetch(`${API}${path}`,{...options,method,headers,cache:method==='GET'?'default':'no-store'});
-    let data=null;
-    const type=response.headers.get('content-type')||'';
-    if(type.includes('application/json'))data=await response.json();
-    if(!response.ok){
-      const error=new Error(data?.error||`Request failed (${response.status})`);
-      error.status=response.status;
-      error.data=data;
-      throw error;
+    const {timeoutMs,...fetchOptions}=options;
+    const controller=new AbortController();
+    const limit=Number(timeoutMs)||timeoutFor(path,method);
+    const timer=setTimeout(()=>controller.abort(),limit);
+    const upstreamSignal=fetchOptions.signal;
+    const abortFromUpstream=()=>controller.abort();
+    if(upstreamSignal){
+      if(upstreamSignal.aborted)controller.abort();
+      else upstreamSignal.addEventListener('abort',abortFromUpstream,{once:true});
     }
-    if(key)memoryCache.set(key,{at:Date.now(),data});
-    if(method!=='GET')clearApiCache();
-    return data;
+    try{
+      const response=await fetch(`${API}${path}`,{...fetchOptions,method,headers,signal:controller.signal,cache:method==='GET'?'default':'no-store'});
+      let data=null;
+      const type=response.headers.get('content-type')||'';
+      if(type.includes('application/json'))data=await response.json();
+      if(!response.ok){
+        const error=new Error(data?.error||`Request failed (${response.status})`);
+        error.status=response.status;
+        error.data=data;
+        throw error;
+      }
+      if(key)memoryCache.set(key,{at:Date.now(),data});
+      if(method!=='GET')clearApiCache();
+      return data;
+    }catch(error){
+      if(error?.name==='AbortError'){
+        const timeoutError=new Error('Live data request timed out.');
+        timeoutError.status=504;
+        throw timeoutError;
+      }
+      throw error;
+    }finally{
+      clearTimeout(timer);
+      upstreamSignal?.removeEventListener?.('abort',abortFromUpstream);
+    }
   })();
 
   if(key)inFlight.set(key,request);
