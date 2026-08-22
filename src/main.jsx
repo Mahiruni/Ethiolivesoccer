@@ -15,11 +15,23 @@ createRoot(document.getElementById('root')).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>
 );
 
-if('serviceWorker' in navigator){
-  window.addEventListener('load',async()=>{
-    try{
-      const registration=await navigator.serviceWorker.register('/sw.js?v=7',{updateViaCache:'none'});
-      registration.update().catch(()=>{});
-    }catch{}
+if ('serviceWorker' in navigator) {
+  window.addEventListener('load', async () => {
+    const hadController = Boolean(navigator.serviceWorker.controller);
+    try {
+      const registration = await navigator.serviceWorker.register('/sw.js', { updateViaCache: 'none' });
+      await registration.update();
+
+      if (hadController) {
+        navigator.serviceWorker.addEventListener('controllerchange', () => {
+          const key = 'ethio-sw-refresh-v8';
+          if (sessionStorage.getItem(key)) return;
+          sessionStorage.setItem(key, '1');
+          window.location.reload();
+        }, { once: true });
+      }
+    } catch (error) {
+      console.warn('Service worker update failed:', error);
+    }
   });
 }

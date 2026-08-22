@@ -1,40 +1,21 @@
-const CACHE='ethio-live-fast-v7';
-const APP_SHELL=['/manifest.json'];
+const CACHE_PREFIX='ethio-live-';
 
 self.addEventListener('install',event=>{
-  event.waitUntil(caches.open(CACHE).then(cache=>cache.addAll(APP_SHELL)).catch(()=>{}));
   self.skipWaiting();
 });
 
 self.addEventListener('activate',event=>{
-  event.waitUntil(caches.keys().then(keys=>Promise.all(keys.filter(key=>key!==CACHE).map(key=>caches.delete(key)))));
-  self.clients.claim();
+  event.waitUntil((async()=>{
+    const keys=await caches.keys();
+    await Promise.all(keys.filter(key=>key.startsWith(CACHE_PREFIX)).map(key=>caches.delete(key)));
+    await self.clients.claim();
+  })());
 });
 
-self.addEventListener('fetch',event=>{
-  const request=event.request;
-  if(request.method!=='GET')return;
-  const url=new URL(request.url);
-  if(url.origin!==self.location.origin||url.pathname.startsWith('/api/'))return;
-
-  if(request.mode==='navigate'){
-    event.respondWith(fetch(request,{cache:'no-store'}));
-    return;
-  }
-
-  if(url.pathname.startsWith('/assets/')){
-    event.respondWith(caches.match(request).then(cached=>cached||fetch(request).then(response=>{
-      if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
-      return response;
-    })));
-    return;
-  }
-
-  event.respondWith(fetch(request).then(response=>{
-    if(response.ok)caches.open(CACHE).then(cache=>cache.put(request,response.clone())).catch(()=>{});
-    return response;
-  }).catch(()=>caches.match(request)));
-});
+// Intentionally do not intercept page, asset, or API requests.
+// The previous cache-first shell could keep stale HTML/JS alive and force
+// users to hard-refresh after a deployment. Push notifications still use
+// this worker, but normal browsing now always follows the browser/network.
 
 self.addEventListener('push',event=>{
   let payload={};
