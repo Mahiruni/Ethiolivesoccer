@@ -283,3 +283,13 @@ button:active,[role="button"]:active{transform:none!important}
  .matchday-pulse small{font-size:9px}
  .news-empty{padding:16px!important}
 }
+
+/* MATCHDAY 2.0: concise timezone, freshness and Today controls. */
+.matchday-quick-actions{display:flex;align-items:center;gap:10px;flex-wrap:wrap;margin:0 0 12px;color:#9fbcca;font-size:11px;font-weight:650}
+.matchday-tz{display:inline-flex;align-items:center;gap:7px}
+.matchday-tz:before{content:"";width:6px;height:6px;border-radius:50%;background:#80dbff;box-shadow:0 0 0 3px rgba(128,219,255,.12)}
+.matchday-updated{margin-left:auto;color:#b6d0db;font-variant-numeric:tabular-nums}
+.matchday-today{background:#1d3b3b!important;color:#c7f568!important;border:1px solid #6a986b!important;border-radius:10px!important;min-height:32px;padding:6px 12px;font-size:11px;font-weight:800}
+.matchday-today:hover:not(:disabled){background:#2a4c42!important}
+.matchday-today:disabled{opacity:.5;cursor:default}
+@media(max-width:760px){.matchday-quick-actions{gap:7px;margin:1px 0 10px;font-size:10px}.matchday-updated{margin-left:0}.matchday-today{margin-left:auto;min-height:34px}}
