@@ -1,0 +1,2 @@
+'use client';
+export default function Error({reset}:{error:Error&{digest?:string};reset:()=>void}){return <main className="centered-error" role="alert"><span>WE'RE ON IT</span><h1>The matchday feed is temporarily unavailable.</h1><p>Check your connection or retry. We never replace missing sports data with guesses.</p><button className="action-primary" onClick={reset}>Try again</button></main>}
