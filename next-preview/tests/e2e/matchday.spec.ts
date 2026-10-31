@@ -21,6 +21,10 @@ test('premium football homepage is readable and responsive',async({page},testInf
  await expect(page.getByText('Arsenal')).toBeVisible();
  await expect(page.locator('.coverage-notice')).toBeVisible();
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
+ if(overflow>1){
+  const offenders=await page.evaluate(()=>[...document.querySelectorAll('body *')].map(el=>({tag:el.tagName,cls:el.className?.toString?.().slice(0,80)||'',right:Math.round(el.getBoundingClientRect().right),left:Math.round(el.getBoundingClientRect().left)})).filter(v=>v.right>document.documentElement.clientWidth+1||v.left< -1).slice(0,16));
+  console.log('MOBILE_OVERFLOW_DIAGNOSTIC',overflow,JSON.stringify(offenders));
+ }
  expect(overflow,'no horizontal page overflow').toBeLessThanOrEqual(1);
  await page.screenshot({path:testInfo.outputPath('matchday-'+testInfo.project.name+'.png'),fullPage:true});
 });
