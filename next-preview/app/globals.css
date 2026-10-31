@@ -222,3 +222,28 @@ html,body{overflow-x:clip}
  linear-gradient(to right,transparent 40%,#c61934 40%,#c61934 60%,transparent 60%),
  linear-gradient(to bottom,transparent 38%,#c61934 38%,#c61934 62%,transparent 62%),#fff;
  box-shadow:0 1px 3px rgba(0,0,0,.15)}
+
+/* Authentic team and competition marks: transparent, frameless and undistorted. */
+.football-logo,
+.football-logo-approved,
+.fixture-logo.football-logo,
+.table-logo.football-logo,
+.detail-logo.football-logo,
+.detail-logo.football-logo-approved,
+.table-league-emblem .football-logo,
+.league-pill .football-logo{
+ background:transparent!important;
+ border:0!important;
+ box-shadow:none!important;
+ padding:0!important;
+ border-radius:0!important;
+ overflow:visible;
+}
+.football-logo img{object-fit:contain!important;filter:none!important}
+.football-logo-fallback{
+ background:transparent;
+ border:1px solid rgba(151,184,199,.35);
+ border-radius:9px;
+}
+.football-logo-approved .football-logo-fallback{border:0}
+.league-identity{gap:0}
