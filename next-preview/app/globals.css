@@ -242,8 +242,8 @@ html,body{overflow-x:clip}
 .football-logo img{object-fit:contain!important;filter:none!important}
 .football-logo-fallback{
  background:transparent;
- border:1px solid rgba(151,184,199,.35);
- border-radius:9px;
+ border:0;
+ border-radius:0;
 }
 .football-logo-approved .football-logo-fallback{border:0}
 .league-identity{gap:0}
