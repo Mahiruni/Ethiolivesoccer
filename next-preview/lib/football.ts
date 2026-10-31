@@ -1,5 +1,6 @@
 import 'server-only';
 import { Pool } from 'pg';
+import {approvedVisual} from './sports-identity';
 
 export const LEAGUES = [
   {slug:'premier-league', id:4328, name:'Premier League', short:'PL', country:'England', label:'ENG', accent:'#b3f368'},
@@ -12,9 +13,10 @@ export type League = typeof LEAGUES[number];
 export type Fixture = {
   id:string; league:string; leagueSlug:string; country:string; date:string|null;
   home:string; away:string; homeScore:number|null; awayScore:number|null;
+  homeTeamId:string|null;awayTeamId:string|null;homeLogo:string|null;awayLogo:string|null;leagueLogo:string|null;
   status:'NS'|'LIVE'|'FT'|'PST'|'SCORED'; statusLabel:string; venue:string|null;
 };
-export type Standing = {position:number;team:string;played:number|null;won:number|null;drawn:number|null;lost:number|null;difference:number|null;points:number|null};
+export type Standing = {position:number;team:string;teamId:string|null;teamLogo:string|null;played:number|null;won:number|null;drawn:number|null;lost:number|null;difference:number|null;points:number|null};
 const ORIGIN='https://www.thesportsdb.com/api/v1/json/123';
 const memory=new Map<string,{expires:number,value:unknown}>();
 const inflight=new Map<string,Promise<unknown>>();
@@ -69,11 +71,18 @@ export function mapFixture(item:Record<string,unknown>,league:League):Fixture|nu
   }
   return {id:'tsdb-'+item.idEvent,league:league.name,leagueSlug:league.slug,
     country:league.country,date,home:String(item.strHomeTeam),away:String(item.strAwayTeam),
-    homeScore,awayScore,status,statusLabel:String(item.strStatus|| (status==='SCORED'?'Score reported, status unconfirmed':'Scheduled')),
+    homeScore,awayScore,
+    homeTeamId:item.idHomeTeam?String(item.idHomeTeam):null,awayTeamId:item.idAwayTeam?String(item.idAwayTeam):null,
+    homeLogo:approvedVisual('team',String(item.idHomeTeam||''),item.strHomeTeamBadge,String(item.strHomeTeam)).imageUrl,
+    awayLogo:approvedVisual('team',String(item.idAwayTeam||''),item.strAwayTeamBadge,String(item.strAwayTeam)).imageUrl,
+    leagueLogo:approvedVisual('league',league.id,item.strLeagueBadge,league.name).imageUrl,
+    status,statusLabel:String(item.strStatus|| (status==='SCORED'?'Score reported, status unconfirmed':'Scheduled')),
     venue:item.strVenue?String(item.strVenue):null};
 }
 export function mapStanding(item:Record<string,unknown>,index:number):Standing{
   return {position:numberOrNull(item.intRank)??index+1,team:String(item.strTeam||'Unknown'),
+    teamId:item.idTeam?String(item.idTeam):null,
+    teamLogo:approvedVisual('team',String(item.idTeam||''),item.strTeamBadge,String(item.strTeam||'Unknown')).imageUrl,
     played:numberOrNull(item.intPlayed),won:numberOrNull(item.intWin),drawn:numberOrNull(item.intDraw),
     lost:numberOrNull(item.intLoss),
     difference:item.intGoalDifference===null||item.intGoalDifference===undefined?null:Number(item.intGoalDifference),
