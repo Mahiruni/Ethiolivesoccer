@@ -20,7 +20,7 @@ export default function MatchCommunity({localId,home,away}:{localId:number|null;
   if(!localId)return;
   let live=true;
   const load=async()=>{
-   const [p,c]=await Promise.allSettled([fetchApi('polls/'+localId),fetchApi('chat/'+localId)]);
+   const [p,c]=await Promise.allSettled([fetchApi('polls/'+localId,localStorage.getItem('ethio_token')?{headers:{Authorization:'Bearer '+localStorage.getItem('ethio_token')}}:{}),fetchApi('chat/'+localId)]);
    if(!live)return;
    if(p.status==='fulfilled')setPoll(p.value);
    if(c.status==='fulfilled')setMessages(c.value);
