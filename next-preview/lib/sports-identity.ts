@@ -23,7 +23,7 @@ export const APPROVED_ARTWORK:Readonly<Record<string,ApprovedImage>>=Object.free
   // Add entries only after verifying individual image rights.
   // Format: 'team:133604': { ... } or 'league:4328': { ... }.
 });
-const TRUSTED_HOSTS=new Set(['www.thesportsdb.com','r2.thesportsdb.com','www.thesportsdb.com']);
+const TRUSTED_HOSTS=new Set(['www.thesportsdb.com','r2.thesportsdb.com']);
 export function validSportsImageUrl(value:unknown):value is string{
   if(typeof value!=='string'||value.length>600)return false;
   try{
@@ -52,4 +52,22 @@ const FLAGS:Readonly<Record<string,{emoji:string,iso:string}>>={
 };
 export function countryIdentity(country:string){
   return FLAGS[country]||{emoji:'🌐',iso:'unknown'};
+}
+
+/**
+ * Approved registry lookup for components where provider event rows omit artwork.
+ * Registry entries must have individual provenance and permission evidence.
+ * Does not authorize arbitrary provider URLs.
+ */
+export function approvedById(kind:EntityKind,providerId:string|number|null|undefined,alt:string):BrandIdentity{
+ const item=APPROVED_ARTWORK[kind+':'+String(providerId??'')];
+ if(!item)return {imageUrl:null,alt,attribution:null,permitted:false};
+ return approvedVisual(kind,providerId,item.sourceUrl,alt);
+}
+export function approvalCoverage(){
+ const items=Object.values(APPROVED_ARTWORK);
+ return {
+  approvedClubs:items.filter(x=>x.entity==='team'&&approvedById('team',x.providerId,'').permitted).length,
+  approvedLeagues:items.filter(x=>x.entity==='league'&&approvedById('league',x.providerId,'').permitted).length
+ };
 }
