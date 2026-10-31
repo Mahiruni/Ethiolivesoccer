@@ -1,6 +1,11 @@
 name: Football artwork rights audit
 on:
   workflow_dispatch:
+  push:
+    branches: [migration/next16-app-router]
+    paths:
+      - 'next-preview/scripts/audit-football-artwork.mjs'
+      - '.github/workflows/football-artwork-audit.yml'
 permissions:
   contents: read
 jobs:
