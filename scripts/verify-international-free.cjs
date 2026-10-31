@@ -2,13 +2,7 @@
 // Read-only network evidence for free, *currently available* international scores.
 // TheSportsDB official v1 public key "123" per provider documentation.
 const base='https://www.thesportsdb.com/api/v1/json/123';
-const checks=[
- {league:'Premier League',id:4328,season:'2026-2027'},
- {league:'La Liga',id:4335,season:'2026-2027'},
- {league:'Bundesliga',id:4331,season:'2026-2027'},
- {league:'Serie A',id:4332,season:'2026-2027'},
- {league:'Ligue 1',id:4334,season:'2026-2027'}
-];
+const checks=[{league:'Champions League',id:4480,season:'2026-2027'}];
 async function probe(entry,endpoint,field) {
  const url=`${base}/${endpoint}`;
  try {
@@ -34,9 +28,8 @@ async function probe(entry,endpoint,field) {
 }
 (async()=>{
  for(const entry of checks){
-   await probe(entry,`eventsseason.php?id=${entry.id}&s=${entry.season}`,'events');
+   await probe(entry,`eventsday.php?d=2026-10-28&l=${entry.id}`,'events');
    await probe(entry,`lookuptable.php?l=${entry.id}&s=${entry.season}`,'table');
-   await probe(entry,`eventsday.php?d=2026-10-31&l=${entry.id}`,'events');
-   await probe(entry,`eventsnextleague.php?id=${entry.id}`,'events');
+
  }
 })().catch(e=>{console.error(e);process.exitCode=1});
