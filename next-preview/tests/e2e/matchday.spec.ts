@@ -45,3 +45,23 @@ test('account preview never silently signs in without secure configuration',asyn
  await page.getByRole('button',{name:'Sign in',exact:true}).last().click();
  await expect(page.locator('.account-feedback.error')).toBeVisible();
 });
+
+test('signed-in profile renders real account activity contract and logout',async({page})=>{
+ await page.addInitScript(()=>localStorage.setItem('ethio_token','preview-e2e-only-token'));
+ await page.route('**/api/auth/me',async route=>route.fulfill({status:200,contentType:'application/json',
+  body:JSON.stringify({user:{id:101,username:'testfan',email:'fan@example.com',display_name:'Matchday Fan'},
+    preferences:{preferred_language:'en',theme:'dark'}})}));
+ await page.route('**/api/me/favorites',async route=>route.fulfill({status:200,contentType:'application/json',
+  body:JSON.stringify([{id:501,name_en:'Arsenal',short_name:'ARS'}])}));
+ await page.route('**/api/me/predictions',async route=>route.fulfill({status:200,contentType:'application/json',
+  body:JSON.stringify([{id:66,match_id:121,vote_choice:'home',home_en:'Arsenal',away_en:'Chelsea',match_date:null}])}));
+ await page.route('**/api/push/config',async route=>route.fulfill({status:200,contentType:'application/json',body:JSON.stringify({enabled:false,publicKey:null})}));
+ await page.goto('/account');
+ await expect(page.getByRole('heading',{name:'Matchday Fan'})).toBeVisible();
+ await expect(page.getByRole('heading',{name:'Favorites & predictions'})).toBeVisible();
+ await expect(page.getByText('Arsenal').first()).toBeVisible();
+ await expect(page.getByText('Picked: Home win')).toBeVisible();
+ await page.getByRole('button',{name:/sign out/i}).click();
+ await expect(page.getByRole('heading',{name:'Welcome back.'})).toBeVisible();
+ expect(await page.evaluate(()=>localStorage.getItem('ethio_token'))).toBeNull();
+});
