@@ -1,8 +1,14 @@
 const express = require('express');
 const geminiRouter = require('./gemini-router');
+const internationalRouter = require('./international-router');
 const legacyApp = require('./legacy-server');
 
 const app = express();
+
+// International football is the default product direction when selected in
+// deployment settings. TheSportsDB's documented free v1 API needs no secret.
+// Route these requests before the legacy Ethiopian API-Football/Gemini handlers.
+if (process.env.FOOTBALL_SOURCE === 'thesportsdb') app.use('/api', internationalRouter);
 
 // Prefer the dedicated sports data feed for scores and standings when its
 // server-side key is set. These existing Express routes return provider fixture

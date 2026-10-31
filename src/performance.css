@@ -210,3 +210,13 @@ img{image-rendering:auto;max-width:100%}
   html{scroll-behavior:auto!important}
   *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* Compact, mobile-first international league picker; no empty layout slots. */
+.league-switcher{display:flex;align-items:center;gap:7px;overflow-x:auto;overscroll-behavior-x:contain;scrollbar-width:none;padding:5px 1px 9px;margin-top:10px;margin-bottom:2px;-webkit-overflow-scrolling:touch;}
+.league-switcher::-webkit-scrollbar{display:none}
+.league-switcher button{flex:0 0 auto;border:1px solid rgba(142,160,192,.28);background:#171d2a;color:#cbd5e1;border-radius:11px;padding:10px 14px;min-height:39px;font-size:12px;font-weight:650;white-space:nowrap;line-height:1.2;transition:background .16s,border-color .16s;}
+.league-switcher button.active,.league-switcher button[aria-pressed="true"]{background:#2957ae;border-color:#6997e6;color:white;}
+.league-switcher button:focus-visible{outline:2px solid #93c5fd;outline-offset:2px}
+.free-feed-note{font-size:11px;line-height:1.5;color:#9aa8c0;margin:0 0 11px;padding:0 2px;}
+.free-feed-note a{color:#b5d1ff;text-decoration:underline;text-underline-offset:2px}
+@media(max-width:600px){.league-switcher{margin-left:-2px;margin-right:-2px}.league-switcher button{min-height:37px;padding:9px 12px;font-size:12px}.free-feed-note{font-size:11px}}

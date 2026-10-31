@@ -1,16 +1,13 @@
 import catalog from '../../competition-catalog.json';
 
-export const competitions=catalog;
+// International-first product: only leagues independently verified on the free feed.
+const internationalSlugs=new Set(['english-premier-league','la-liga','bundesliga','serie-a','ligue-1']);
+export const competitions=catalog.filter(item=>internationalSlugs.has(item.slug));
 
 // Editorial placeholders are retained only as an offline/fallback presentation layer.
 // Real newsroom data is fetched from /api/news and replaces these when available.
-export const demoArticles=[
-{slug:'match-day-desk-launch',category:'Platform',competitionSlug:'ethiopian-premier-league',titleEn:'A faster match-day desk for Ethiopian football',titleAm:'ለኢትዮጵያ እግር ኳስ ፈጣን የጨዋታ ቀን ማዕከል',summaryEn:'EthioLiveScores is organizing scores, commentary, standings and supporter activity into one mobile-first match-day flow.',summaryAm:'EthioLiveScores ውጤቶችን፣ አስተያየቶችን፣ ደረጃ ሰንጠረዦችን እና የደጋፊዎችን እንቅስቃሴ በአንድ የሞባይል ቅድሚያ የጨዋታ ቀን ፍሰት ውስጥ ያደራጃል።',bodyEn:'This demo article shows the bilingual publishing format. Production stories can be written in English and Amharic, attached to a competition or club, categorized, scheduled and published through the news API.',bodyAm:'ይህ የማሳያ ጽሑፍ የሁለት ቋንቋ ህትመት ቅርጽን ያሳያል። በምርት ላይ የሚወጡ ዜናዎች በሁለት ቋንቋ ሊታተሙ ይችላሉ።',publishedAt:'2026-08-22T00:00:00+03:00',demo:true},
-{slug:'transfer-desk-workflow',category:'Transfers',competitionSlug:'ethiopian-premier-league',titleEn:'Transfer desk: one place for confirmed moves and club updates',titleAm:'የዝውውር ዴስክ፡ የተረጋገጡ ዝውውሮች እና የክለብ ዝመናዎች',summaryEn:'The content layer separates confirmed club information from rumors and gives every update a competition context.',summaryAm:'የይዘት ስርዓቱ የተረጋገጠ የክለብ መረጃን ከወሬ ይለያል።',bodyEn:'Editors can publish confirmed transfers, contract updates and squad registrations with a clear category and competition link. This sample contains no claim about a real transfer.',bodyAm:'አርታዒዎች የተረጋገጡ ዝውውሮችን እና የውል ዝመናዎችን ማተም ይችላሉ።',publishedAt:'2026-08-21T18:00:00+03:00',demo:true},
-{slug:'injury-availability-format',category:'Injuries',competitionSlug:'ethiopia-national-team',titleEn:'Availability reports designed for quick match-day reading',titleAm:'ለፈጣን የጨዋታ ቀን ንባብ የተዘጋጁ የተጫዋች ዝግጁነት ሪፖርቶች',summaryEn:'A dedicated injury and availability format keeps status, source confidence and return expectations separate.',summaryAm:'የተለየ የጉዳት እና ዝግጁነት ቅርጽ ሁኔታን እና የምንጭ እምነትን ይለያል።',bodyEn:'Production injury stories should name the source and distinguish confirmed medical updates from uncertain reporting. This demo is structural only.',bodyAm:'የጉዳት ዜናዎች ምንጩን መጥቀስ እና የተረጋገጠ መረጃን መለየት አለባቸው።',publishedAt:'2026-08-21T15:00:00+03:00',demo:true},
-{slug:'preview-template',category:'Preview',competitionSlug:'caf-champions-league',titleEn:'Preview format: form, availability, tactical matchups and stakes',titleAm:'የቅድመ ጨዋታ ቅርጽ፡ ቅርጽ፣ ዝግጁነት፣ ታክቲካዊ ግጥሚያ እና የጨዋታው ክብደት',summaryEn:'Previews are structured around useful match context instead of unsupported predictions.',summaryAm:'የቅድመ ጨዋታ ጽሑፎች በጠቃሚ የጨዋታ አውድ ዙሪያ ይደራጃሉ።',bodyEn:'A production preview can combine recent form, confirmed squad information, venue, kickoff time, table context and tactical themes.',bodyAm:'የቅድመ ጨዋታ ጽሑፍ የቅርብ ጊዜ ቅርጽን እና የተረጋገጠ የቡድን መረጃን ማጣመር ይችላል።',publishedAt:'2026-08-21T12:00:00+03:00',demo:true},
-{slug:'post-match-template',category:'Post-match',competitionSlug:'ethiopian-cup',titleEn:'Post-match reports that connect the score to the story',titleAm:'ውጤቱን ከጨዋታው ታሪክ ጋር የሚያገናኙ የድህረ ጨዋታ ሪፖርቶች',summaryEn:'Final score, key events, turning points and table or knockout implications can live in one recap.',summaryAm:'የመጨረሻ ውጤት፣ ቁልፍ ክስተቶች እና የጨዋታ መቀየሪያ ነጥቦች በአንድ ማጠቃለያ ውስጥ ሊቀርቡ ይችላሉ።',bodyEn:'The post-match template is ready to be fed by live match events and editor notes. This sample is not reporting a real result.',bodyAm:'የድህረ ጨዋታ ቅርጹ በቀጥታ የጨዋታ ክስተቶች እና የአርታዒ ማስታወሻዎች እንዲሞላ ዝግጁ ነው።',publishedAt:'2026-08-20T20:00:00+03:00',demo:true}
-];
+// Do not publish outdated Ethiopian demo news as international reporting.
+export const demoArticles=[];
 
 export function findCompetition(slug){return competitions.find(item=>item.slug===slug)}
 export function leagueToSlug(name=''){
