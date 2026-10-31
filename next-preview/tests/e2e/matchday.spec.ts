@@ -65,3 +65,13 @@ test('signed-in profile renders real account activity contract and logout',async
  await expect(page.getByRole('heading',{name:'Welcome back.'})).toBeVisible();
  expect(await page.evaluate(()=>localStorage.getItem('ethio_token'))).toBeNull();
 });
+
+test('verified identity components render flags and accessible crest fallbacks',async({page})=>{
+ await page.goto('/');
+ await expect(page.getByRole('img',{name:'England flag'}).first()).toBeVisible();
+ await expect(page.locator('.football-logo-fallback').first()).toBeVisible();
+ await expect(page.locator('.fixture-logo.football-logo').first()).toBeVisible();
+ await expect(page.getByText('Bournemouth')).toBeVisible();
+ await page.locator('.league-pill').filter({hasText:'La Liga'}).click();
+ await expect(page.getByRole('img',{name:'Spain flag'}).first()).toBeVisible();
+});
