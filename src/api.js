@@ -18,8 +18,9 @@ function ttlFor(path,method){
 
 function timeoutFor(path,method){
   if(method!=='GET')return 15000;
-  if(path.startsWith('/matches')||path.startsWith('/standings'))return 6500;
-  if(path==='/provider/status')return 3500;
+  // Serverless cold starts, DB access and sports-provider calls may exceed 6.5s.
+  if(path.startsWith('/matches')||path.startsWith('/standings'))return 20000;
+  if(path==='/provider/status')return 12000;
   if(path.startsWith('/news'))return 7000;
   return 9000;
 }
