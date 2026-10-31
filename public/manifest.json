@@ -1,11 +1,11 @@
 {
-  "short_name":"EthioScores",
-  "name":"EthioLiveScores Community Football",
-  "start_url":"/",
-  "scope":"/",
-  "background_color":"#09090d",
-  "theme_color":"#09090d",
-  "display":"standalone",
-  "orientation":"portrait",
-  "description":"Live Ethiopian football scores, competitions, bilingual news and match-day community."
+  "short_name": "EthioLive",
+  "name": "EthioLiveScores — Global Matchday",
+  "start_url": "/",
+  "scope": "/",
+  "background_color": "#07111d",
+  "theme_color": "#07111d",
+  "display": "standalone",
+  "orientation": "portrait",
+  "description": "International football fixtures, reported scores, standings and fan community."
 }
