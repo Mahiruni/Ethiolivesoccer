@@ -2,6 +2,36 @@
 
 EthioLiveScores is a dual-language Ethiopian football live-score community application using PostgreSQL, Express, JWT authentication, live chat, standings, predictions, account personalization, and PWA installation support.
 
+## International football (free source)
+
+EthioLiveScores now supports an international-first score center covering the
+English Premier League, La Liga, Bundesliga, Serie A and Ligue 1 using the
+**documented TheSportsDB v1 free API**. To enable on Vercel, set:
+
+```env
+FOOTBALL_SOURCE=thesportsdb
+```
+
+No paid subscription or additional API key is needed for this development/web
+integration. The app uses the public v1 key `123` provided in the official
+TheSportsDB documentation.
+
+**Limitations:** The free `eventsday` endpoint returns at most 3 matches for a
+league/date, standings return the top 5 rows, and calls can be rate-limited.
+These are partial, possibly delayed results, *not* real-time full match-day
+coverage. The UI discloses those limitations and credits the source. The backend
+uses a shared Supabase cache (`sports_provider_cache`) and local cache to avoid
+wasting free requests.
+
+Do not reuse unspecified TheSportsDB graphics or logos without checking the
+relevant licence. The provider's terms restrict publishing applications to
+app stores on the free plan; paid access and suitable media rights are required
+for that release channel. See https://www.thesportsdb.com/docs_terms_of_use.php
+
+The existing API-Football provider remains available when the source switch
+is disabled, but its Free plan does not cover the current 2026 season. Do not
+fall back to Gemini to invent unverified live scores.
+
 ## v2 React architecture
 
 The frontend is now a component-based **React + Vite** application while the existing **Node.js + Express + PostgreSQL** backend remains the API layer. The app includes reusable components for the live match center, authentication, profile management, mobile navigation, favorites, notification preferences, predictions, and match-day chat.
