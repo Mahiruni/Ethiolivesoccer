@@ -25,3 +25,40 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
 @media(max-width:700px){.wrap{padding-left:14px;padding-right:14px}.page{padding-top:16px;padding-bottom:calc(90px + env(safe-area-inset-bottom))}.header-inner{min-height:65px}.site-ribbon{display:none}.mobile-drawer{top:65px}.wordmark-icon{height:36px;width:36px;border-radius:11px}.wordmark-copy strong{font-size:18px}.wordmark-copy small{font-size:7px}.preview-pill{font-size:8px;padding:8px}.site-footer{padding-bottom:85px}.footer-inner{flex-direction:column;align-items:flex-start;justify-content:center;gap:4px;min-height:76px}.bottom-nav{display:flex;position:fixed;bottom:0;left:0;right:0;z-index:70;justify-content:space-around;background:rgba(7,17,29,.96);border-top:1px solid #36515d;padding:8px 6px calc(8px + env(safe-area-inset-bottom));backdrop-filter:blur(20px)}.bottom-nav a{display:flex;align-items:center;flex-direction:column;gap:4px;justify-content:center;min-height:45px;flex:1;max-width:99px;font-size:10px;font-weight:750;color:#91afc1}.bottom-nav a.active{color:var(--lime)}.hero{grid-template-columns:1fr;min-height:0;border-radius:20px}.hero-copy{padding:27px 20px 23px}.hero h1{font-size:clamp(36px,10vw,51px);margin:13px 0}.hero p{font-size:12px}.hero-art{display:none}.hero-stats{margin-top:21px}.hero-stats div{min-width:0;flex:1;padding:0 11px}.hero-stats strong{font-size:24px}.hero-stats span{font-size:8px}.section-label{margin-top:22px}.section-label h2{font-size:23px}.source-indicator{display:none}.league-pills{display:flex;overflow-x:auto;scroll-snap-type:x mandatory;gap:9px;margin:0 -14px 12px;padding:0 14px 6px;scrollbar-width:none}.league-pills::-webkit-scrollbar{display:none}.league-pill{min-width:162px;padding:12px;scroll-snap-align:start}.league-emblem{flex-basis:34px;height:34px}.league-pill>svg{display:none}.coverage-notice{padding:11px;font-size:10px;align-items:flex-start}.coverage-notice a{display:none}.matchday-grid{margin-top:19px;gap:18px}.sidebar-pane{display:block}.sidebar-pane>.section-label{margin-top:15px}.fan-card{margin-top:16px}.fixture-shell,.table-surface{border-radius:15px}.fixture-toolbar{gap:4px;padding:9px}.day-list{gap:3px}.day-button{min-width:0;flex:1;padding:5px 2px}.day-button strong{font-size:19px}.day-button small{font-size:8px}.arrow-control{flex-basis:30px;height:37px}.fixture-actions{padding:10px;gap:6px}.filter-tabs button{font-size:10px;padding:8px}.today-action{font-size:10px;padding:8px}.fixture-row{grid-template-columns:60px minmax(0,1fr) 29px 13px;gap:6px;padding:11px 9px;min-height:81px}.fixture-list-header{grid-template-columns:60px minmax(0,1fr) 29px;padding:10px 9px}.fixture-team b{font-size:11px}.fixture-team{gap:6px}.team-monogram{width:24px;flex-basis:24px;height:23px;font-size:8px}.fixture-status{font-size:9px}.fixture-result strong{font-size:14px}.fixture-bottom{font-size:8px;padding:12px 9px;gap:7px}.fixture-bottom>span:last-child{display:none}.match-detail-hero{padding:30px 12px 22px}.detail-scoreboard{grid-template-columns:1fr minmax(94px,.9fr) 1fr;gap:6px;margin:27px 0 19px}.detail-team-badge{height:48px;width:48px;border-radius:12px}.detail-team h1{font-size:16px}.detail-result strong{font-size:31px}.detail-result small{font-size:9px}.detail-lower-grid{grid-template-columns:1fr}.match-detail-layout{padding-bottom:105px}}
 @media(max-width:370px){.preview-pill{display:none}.wordmark-copy strong{font-size:17px}.filter-tabs button{padding:7px}.fixture-status{font-size:8px}}
 @media(prefers-reduced-motion:reduce){*,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}}
+
+/* Account migration preview: standalone compact form and clear security status */
+.account-page{padding-top:43px;padding-bottom:90px}
+.account-intro{max-width:650px;margin-bottom:27px}
+.account-intro h1{font-size:clamp(36px,6vw,58px);margin:11px 0 12px}
+.account-intro>p{color:#b5c9d5;font-size:14px;line-height:1.65}
+.account-grid{display:grid;grid-template-columns:minmax(0,1.08fr) minmax(300px,.88fr);gap:19px;align-items:start}
+.account-panel{background:#122436;border:1px solid #385465;border-radius:21px;padding:30px}
+.account-panel h2{font-size:26px;margin:12px 0 7px}
+.account-panel>.muted{font-size:13px;line-height:1.6}
+.account-tabs{display:grid;grid-template-columns:1fr 1fr;background:#0c1d2b;border-radius:12px;padding:5px;border:1px solid #314d5e;gap:5px}
+.account-tabs button{background:transparent;color:#8fb1c3;border:1px solid transparent;border-radius:9px;padding:12px;font-weight:800;font-size:12px}
+.account-tabs button.active{background:#284b38;border-color:#639561;color:#d2fea2}
+.account-form{display:flex;flex-direction:column;gap:15px;margin-top:24px}
+.account-form>label{display:flex;flex-direction:column;gap:8px;font-size:11px;font-weight:850;color:#c8dce8}
+.account-form>label>span{display:flex;align-items:center;gap:10px;background:#0a1b2b;border:1px solid #405b6b;border-radius:11px;padding:0 13px;color:#97b9c9}
+.account-form input{background:#0a1b2b;border:1px solid #405b6b;border-radius:11px;color:#fff;width:100%;padding:12px 14px;min-height:45px;font-size:16px!important}
+.account-form label>span input{border:0;padding:12px 0;outline:none!important}
+.account-form input::placeholder{color:#6e91a3}
+.account-form button.account-submit{margin-top:5px;display:flex;align-items:center;justify-content:center;gap:10px;background:var(--lime);color:#081924;min-height:48px;border:1px solid #e3ffb8;border-radius:11px;font-size:13px;font-weight:850}
+.account-form button.account-submit:hover{background:#dffc9e}
+.password-toggle{padding:7px;color:#a2bcc9;background:transparent;border:0}
+.account-feedback{padding:13px 15px;border-radius:10px;font-size:12px;line-height:1.5;margin:16px 0 0}
+.account-feedback.error{background:#3e2736;border:1px solid #985268;color:#ffd0d7}
+.account-feedback.success{background:#1f4235;border:1px solid #608a63;color:#d1f9bd}
+.account-avatar{width:67px;height:67px;display:grid;place-items:center;background:#25483a;color:var(--lime);border:1px solid #68966c;border-radius:20px;margin-bottom:18px}
+.account-signout{display:inline-flex;align-items:center;gap:9px;background:#2d3541;border:1px solid #596070;color:#e4edf3;border-radius:10px;padding:10px 15px;margin-top:23px;font-size:12px;font-weight:750}
+.account-aside{border-radius:21px;background:linear-gradient(145deg,#1b3b38,#133040);border:1px solid #4e7164;padding:32px;position:relative;overflow:hidden}
+.account-icon{display:grid;place-items:center;width:55px;height:55px;border-radius:17px;background:var(--lime);color:#112b29;margin-bottom:25px}
+.account-aside h2{font-size:clamp(28px,4vw,40px);margin:12px 0}
+.account-aside>p{font-size:13px;color:#b3cbd3;line-height:1.7}
+.account-proof{border-top:1px solid #4b655f;margin-top:23px;padding-top:19px;display:flex;flex-direction:column;gap:14px}
+.account-proof>div{display:flex;align-items:center;gap:11px;color:#e2f6d5;font-size:12px;font-weight:750}
+.account-proof svg{color:var(--lime);flex:0 0 auto}
+.account-aside .account-warning{background:#172e38;padding:14px;margin-top:23px;border-radius:10px;border:1px solid #4f665e;font-size:11px;color:#a9c2cf}
+@media(max-width:850px){.account-grid{grid-template-columns:1fr}}
+@media(max-width:700px){.account-page{padding-top:24px;padding-bottom:105px}.account-intro h1{font-size:38px}.account-intro>p{font-size:12px}.account-panel,.account-aside{padding:20px;border-radius:17px}.account-tabs button{padding:10px}.account-panel h2{font-size:23px}.account-aside h2{font-size:28px}.account-form{gap:12px}}
