@@ -1,7 +1,7 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
 import { useNavigate } from 'react-router-dom';
 import { CalendarDays, Clock3, MessageCircle, BarChart3, Send, Radio, ChevronRight, RefreshCw, Wifi, WifiOff, Shield } from 'lucide-react';
-import { apiFetch } from '../api';
+import { apiFetch, clearApiCache } from '../api';
 import { useAuth } from '../context/AuthContext';
 import { leagueToSlug } from '../data/content';
 
@@ -31,7 +31,7 @@ const finishedStatuses=['FT','AET','PEN'];
 const isLive=m=>liveStatuses.includes(String(m.status).toUpperCase());
 const isFinished=m=>finishedStatuses.includes(String(m.status).toUpperCase());
 const initials=name=>String(name||'Team').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
-const isoDate=d=>{const x=new Date(d);return `${x.getFullYear()}-${String(x.getMonth()+1).padStart(2,'0')}-${String(x.getDate()).padStart(2,'0')}`};
+const isoDate=d=>{const parts=new Intl.DateTimeFormat('en-US',{timeZone:'Africa/Addis_Ababa',year:'numeric',month:'2-digit',day:'2-digit'}).formatToParts(d);const get=part=>parts.find(x=>x.type===part)?.value;return `${get('year')}-${get('month')}-${get('day')}`};
 const haptic=()=>{try{navigator.vibrate?.(8)}catch{}};
 
 const internationalLeagues=[
@@ -48,14 +48,45 @@ export default function MatchCenter({onNeedAuth}){
   const calendarRef=useRef(null);
   const touchRef=useRef(null);
   const activityRef=useRef(0);
-  const [matches,setMatches]=useState([]),[standings,setStandings]=useState([]),[demo,setDemo]=useState(false),[loading,setLoading]=useState(true),[provider,setProvider]=useState(null),[dataError,setDataError]=useState(null);
-  const [filter,setFilter]=useState('all'),[selectedLeague,setSelectedLeague]=useState('english-premier-league'),[selected,setSelected]=useState(null),[selectedDate,setSelectedDate]=useState(isoDate(new Date())),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[poll,setPoll]=useState(null),[voteBusy,setVoteBusy]=useState(false),[refreshing,setRefreshing]=useState(false);
+  const latestRequest=useRef(0);
+  const [matches,setMatches]=useState([]),[standings,setStandings]=useState([]),[demo,setDemo]=useState(false),[loading,setLoading]=useState(true),[provider,setProvider]=useState(null),[dataError,setDataError]=useState(null),[tableError,setTableError]=useState(null),[lastUpdated,setLastUpdated]=useState(null);
+  const [filter,setFilter]=useState('all'),[selectedLeague,setSelectedLeague]=useState(()=>{try{const saved=localStorage.getItem('ethio-league');return internationalLeagues.some(l=>l.slug===saved)?saved:'english-premier-league'}catch{return'english-premier-league'}}),[selected,setSelected]=useState(null),[selectedDate,setSelectedDate]=useState(isoDate(new Date())),[chat,setChat]=useState([]),[message,setMessage]=useState(''),[poll,setPoll]=useState(null),[voteBusy,setVoteBusy]=useState(false),[refreshing,setRefreshing]=useState(false);
 
   useEffect(()=>{const mark=()=>{activityRef.current=Date.now()};window.addEventListener('scroll',mark,{passive:true});window.addEventListener('touchmove',mark,{passive:true});return()=>{window.removeEventListener('scroll',mark);window.removeEventListener('touchmove',mark)}},[]);
 
-  const loadData=async(silent=false,background=false)=>{if(!silent)setLoading(true);else if(!background)setRefreshing(true);try{const[m,s,p]=await Promise.allSettled([apiFetch(`/matches?date=${selectedDate}&league=${selectedLeague}`),apiFetch(`/standings?league=${selectedLeague}`),apiFetch('/provider/status')]);const matchData=m.status==='fulfilled'&&Array.isArray(m.value)?m.value:[];const table=s.status==='fulfilled'&&Array.isArray(s.value)?s.value:[];setMatches(matchData);setStandings(table);setProvider(p.status==='fulfilled'?p.value:null);setDemo(m.status!=='fulfilled');setDataError(m.status==='rejected'?`${m.reason?.data?.error||'Unable to load verified football scores.'} ${m.reason?.data?.action||''}`.trim():null);if(matchData.length&&!matchData.some(x=>String(x.id)===String(selected)))setSelected(matchData[0].id);}catch{setMatches([]);setStandings([]);setDemo(true);setDataError('Unable to load verified football scores.')}finally{setLoading(false);if(!background)setRefreshing(false)}};
-  useEffect(()=>{loadData();},[selectedDate,selectedLeague]);
-  useEffect(()=>{const id=setInterval(()=>{if(document.visibilityState!=='visible')return;if(Date.now()-activityRef.current<1800)return;loadData(true,true)},provider?.configured?60000:120000);return()=>clearInterval(id)},[selectedDate,selectedLeague,provider?.configured]);
+  // Ignore stale responses when a fan changes league or date before an API request completes.
+  const loadData=async(silent=false,background=false)=>{
+    const requestId=++latestRequest.current;
+    if(!silent)setLoading(true);
+    else if(!background){setRefreshing(true);clearApiCache('/matches?');clearApiCache('/standings?');}
+    const [m,s,p]=await Promise.allSettled([
+      apiFetch(`/matches?date=${selectedDate}&league=${selectedLeague}`),
+      apiFetch(`/standings?league=${selectedLeague}`),
+      apiFetch('/provider/status')
+    ]);
+    if(requestId!==latestRequest.current)return;
+    const matchData=m.status==='fulfilled'&&Array.isArray(m.value)?m.value:[];
+    const table=s.status==='fulfilled'&&Array.isArray(s.value)?s.value:[];
+    setMatches(matchData);setStandings(table);
+    setProvider(p.status==='fulfilled'?p.value:null);
+    setDemo(m.status!=='fulfilled');
+    setDataError(m.status==='rejected'
+      ? `${m.reason?.data?.error||'Match data could not be loaded.'} ${m.reason?.data?.action||''}`.trim()
+      : null);
+    setTableError(s.status==='rejected'?'Table temporarily unavailable. Try refreshing.':null);
+    if(m.status==='fulfilled'||s.status==='fulfilled')setLastUpdated(new Date());
+    setSelected(prev=>matchData.some(x=>String(x.id)===String(prev))?prev:(matchData[0]?.id||null));
+    setLoading(false);setRefreshing(false);
+  };
+  useEffect(()=>{try{localStorage.setItem('ethio-league',selectedLeague)}catch{}},[selectedLeague]);
+  useEffect(()=>{loadData();return()=>{latestRequest.current++}},[selectedDate,selectedLeague]);
+  useEffect(()=>{
+    const id=setInterval(()=>{
+      if(document.visibilityState!=='visible'||Date.now()-activityRef.current<1800)return;
+      loadData(true,true);
+    },provider?.configured?60000:120000);
+    return()=>clearInterval(id);
+  },[selectedDate,selectedLeague,provider?.configured]);
 
   const loadChat=async()=>{const m=matches.find(x=>String(x.id)===String(selected));const local=m?.local_match_id||null;if(!local){setChat([]);return;}try{setChat(await apiFetch(`/chat/${local}`)||[])}catch{setChat([])}};
   const loadPoll=async()=>{const m=matches.find(x=>String(x.id)===String(selected));const local=m?.local_match_id||null;if(!local){setPoll(null);return;}try{setPoll(await apiFetch(`/polls/${local}`))}catch{setPoll(null)}};
@@ -65,7 +96,7 @@ export default function MatchCenter({onNeedAuth}){
   const groups=useMemo(()=>filtered.reduce((acc,m)=>{const k=m.league_name||`League ${m.league_id||''}`;(acc[k]||=[]).push(m);return acc},{}),[filtered]);
   const selectedMatch=matches.find(m=>String(m.id)===String(selected))||matches[0]||null;
   const localSelected=selectedMatch?.local_match_id||null;
-  const matchTime=m=>isLive(m)?`${m.current_minute||0}′`:isFinished(m)?String(m.status).toUpperCase():m.match_date?new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false}).format(new Date(m.match_date)):'TBD';
+  const matchTime=m=>isLive(m)?`${m.current_minute||0}′`:isFinished(m)?String(m.status).toUpperCase():m.match_date?new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',hour12:false,timeZone:'Africa/Addis_Ababa'}).format(new Date(m.match_date)):'TBD';
   const openMatch=m=>{haptic();navigate(`/match/${m.id}`,{state:{match:{...m,home_logo:verifiedLogo(m.home_en,m.home_logo),away_logo:verifiedLogo(m.away_en,m.away_logo)}}})};
   const vote=async choice=>{if(!auth.user){onNeedAuth();return;}if(!localSelected)return;haptic();setVoteBusy(true);try{await apiFetch(`/polls/${localSelected}`,{method:'POST',body:JSON.stringify({vote_choice:choice})});await loadPoll();await auth.loadPredictions?.()}finally{setVoteBusy(false)}};
   const send=async()=>{if(!message.trim())return;if(!auth.user){onNeedAuth();return;}if(!localSelected)return;try{await apiFetch(`/chat/${localSelected}`,{method:'POST',body:JSON.stringify({message_text:message.trim()})});haptic();setMessage('');loadChat()}catch{}};
@@ -82,6 +113,7 @@ export default function MatchCenter({onNeedAuth}){
 
     <div className="league-switcher" role="group" aria-label="Choose international competition">{internationalLeagues.map(item=><button type="button" key={item.slug} aria-pressed={selectedLeague===item.slug} className={selectedLeague===item.slug?'active':''} onClick={()=>{haptic();setSelectedLeague(item.slug);setFilter('all');setSelected(null);}}>{item.label}</button>)}</div>
     <p className="free-feed-note">Free data: up to 3 fixtures per day and 5 standings rows per league. Scores may be delayed; not an official real-time feed. <a href="https://www.thesportsdb.com/" target="_blank" rel="noopener noreferrer">Source: TheSportsDB</a></p>
+    <div className="matchday-quick-actions"><span className="matchday-tz">All times in Addis Ababa (EAT)</span>{lastUpdated&&<span className="matchday-updated">Updated {new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Addis_Ababa'}).format(lastUpdated)}</span>}<button type="button" className="matchday-today" onClick={()=>{haptic();setSelectedDate(isoDate(new Date()));setFilter('all')}} disabled={selectedDate===todayKey}>Today</button></div>
     <div className="mobile-score-controls">
       <div className="swipe-hint"><span>‹</span><b>Swipe left or right</b><span>to change match day ›</span></div>
       <div className="date-strip"><button className="date-card calendar" onClick={()=>{haptic();calendarRef.current?.showPicker?.()}}><CalendarDays size={18}/><input ref={calendarRef} type="date" value={selectedDate} onChange={e=>e.target.value&&setSelectedDate(e.target.value)} aria-label="Choose match date"/></button>{dates.map(({d,date})=><button key={date} className={`date-card ${selectedDate===date?'active':''}`} onClick={()=>{haptic();setSelectedDate(date)}}><small>{date===todayKey?'TODAY':d.toLocaleDateString('en',{weekday:'short'}).toUpperCase()}</small><b>{d.getDate()}</b></button>)}</div>
@@ -97,7 +129,7 @@ export default function MatchCenter({onNeedAuth}){
       <div className="sponsor-card"><div><small>PARTNER OPPORTUNITY</small><b>Be part of the global matchday</b></div><button>Advertise</button></div>
     </section>
     <aside className="side-column">
-      <section className="side-card" id="standings"><div className="side-head"><b>{internationalLeagues.find(item=>item.slug===selectedLeague)?.label} table</b><small>TOP 5 · FREE</small></div><div className="table-head"><span>#</span><span>TEAM</span><span>MP</span><span>PTS</span></div>{standings.slice(0,5).map((r,i)=>{const logo=verifiedLogo(r.name_en,r.logo);return <div className="standing-row" key={r.team_id||r.name_en}><span>{r.rank||i+1}</span><span>{logo?<img className="tiny-logo-img" src={logo} alt={`${r.name_en} crest`} referrerPolicy="no-referrer"/>:<span className="tiny-team"><Shield size={14}/></span>}{r.name_en}</span><span>{r.mp}</span><b>{r.pts}</b></div>})}{!standings.length&&<div className="empty-state">No verified league table is available right now.</div>}</section>
+      <section className="side-card" id="standings"><div className="side-head"><b>{internationalLeagues.find(item=>item.slug===selectedLeague)?.label} table</b><small>TOP 5 · FREE</small></div><div className="table-head"><span>#</span><span>TEAM</span><span>MP</span><span>PTS</span></div>{standings.slice(0,5).map((r,i)=>{const logo=verifiedLogo(r.name_en,r.logo);return <div className="standing-row" key={r.team_id||r.name_en}><span>{r.rank||i+1}</span><span>{logo?<img className="tiny-logo-img" src={logo} alt={`${r.name_en} crest`} referrerPolicy="no-referrer"/>:<span className="tiny-team"><Shield size={14}/></span>}{r.name_en}</span><span>{r.mp}</span><b>{r.pts}</b></div>})}{!standings.length&&<div className="empty-state">{tableError||'No verified league table is available for this league.'}</div>}</section>
       <section className="side-card"><div className="side-head"><b>Match prediction</b><small>COMMUNITY</small></div><div className="prediction-box"><h3>{selectedMatch?`${selectedMatch.home_en} vs ${selectedMatch.away_en}`:'No verified match selected'}</h3><p>{localSelected?'Who wins?':'Community voting requires a database-linked fixture.'}</p><div className="poll-grid"><button disabled={voteBusy||!localSelected} className={poll?.my_vote==='home'?'active':''} onClick={()=>vote('home')}><b>Home</b><span>{pct(poll?.home_votes||0)}%</span></button><button disabled={voteBusy||!localSelected} className={poll?.my_vote==='draw'?'active':''} onClick={()=>vote('draw')}><b>Draw</b><span>{pct(poll?.draw_votes||0)}%</span></button><button disabled={voteBusy||!localSelected} className={poll?.my_vote==='away'?'active':''} onClick={()=>vote('away')}><b>Away</b><span>{pct(poll?.away_votes||0)}%</span></button></div><small>{total} community votes</small></div></section>
       <section className="side-card chat-card" id="community"><div className="side-head"><b>Match-day chat</b><small className="live-chat"><span/> LIVE</small></div><div className="chat-stream">{chat.length?chat.map(item=><div className="chat-line" key={item.id}><span className="chat-avatar">{initials(item.username)}</span><div><b>@{item.username}</b><p>{item.message_text}</p></div></div>):<div className="empty-state">{localSelected?'No messages yet. Start the conversation.':'Community chat requires a database-linked fixture.'}</div>}</div><div className="chat-compose"><input maxLength={280} value={message} onChange={e=>setMessage(e.target.value)} onKeyDown={e=>e.key==='Enter'&&send()} placeholder={auth.user?'Say something about the match…':'Sign in to join the chat…'} disabled={!localSelected}/><button onClick={send} disabled={!localSelected}><Send size={16}/></button></div></section>
     </aside></div>
