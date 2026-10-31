@@ -54,9 +54,23 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
  const [state,setState]=useState<ViewState>({fixtures:[],standings:[],loading:true,error:null,tableError:null,lastChecked:null});
  const requestId=useRef(0);
  const [nonce,setNonce]=useState(0);
+ const [verifiedLeagueLogos,setVerifiedLeagueLogos]=useState<Record<string,string>>({});
  const initial=useRef(true);
  const selected=LEAGUES.find(l=>l.slug===league)||LEAGUES[0];
  useEffect(()=>{setDate(dateKey(new Date()))},[]);
+ useEffect(()=>{
+  const controller=new AbortController();
+  fetch('/api/competitions',{signal:controller.signal}).then(r=>r.ok?r.json():[])
+   .then((entries:unknown)=>{
+    if(!Array.isArray(entries))return;
+    const logos:Record<string,string>={};
+    for(const item of entries){
+      if(item&&typeof item==='object'&&typeof item.slug==='string'&&typeof item.logo==='string')logos[item.slug]=item.logo;
+    }
+    setVerifiedLeagueLogos(logos);
+   }).catch(()=>{});
+  return()=>controller.abort();
+ },[]);
  useEffect(()=>{
   if(initial.current){initial.current=false;return;}
   // Keep Next App Router URLs canonical, but never overwrite the user's date selection.
@@ -106,7 +120,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
   <div className="section-label"><div><span className="eyebrow">01 / THE LEAGUES</span><h2>Pick your competition</h2></div><div className="source-indicator"><ShieldCheck size={15}/> VERIFIED SOURCE · PARTIAL COVERAGE</div></div>
   <nav className="league-pills" aria-label="Choose competition">
    {LEAGUES.map(l=><button key={l.slug} type="button" className={'league-pill '+(league===l.slug?'selected':'')} onClick={()=>changeLeague(l.slug)} aria-pressed={league===l.slug}>
-    <span className="league-identity"><CountryFlag country={l.country}/><FootballLogo name={l.name} size={34} kind="league"/></span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
+    <span className="league-identity"><CountryFlag country={l.country}/><FootballLogo name={l.name} src={verifiedLeagueLogos[l.slug]} size={34} kind="league"/></span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
   </nav>
   <div className="coverage-notice"><Info size={15}/><span>Free-source coverage is limited to roughly three match records per league/date and the first five table rows. This is not a real-time licensed feed.</span><a href="https://www.thesportsdb.com/" target="_blank" rel="noopener noreferrer">THE SPORTS DB <ArrowUpRight size={13}/></a></div>
   <div className="matchday-grid">
@@ -125,7 +139,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
    </section>
    <aside className="sidebar-pane">
     <div className="section-label section-label-tight"><div><span className="eyebrow">03 / THE STANDINGS</span><h2>League table</h2></div><Trophy size={22} className="sidebar-title-icon"/></div>
-    <div className="table-surface"><div className="table-top"><div className="table-league"><span className="table-league-emblem"><CountryFlag country={selected.country}/></span><div><strong>{selected.name}</strong><small>2026/27 SEASON</small></div></div><span className="table-badge">TOP 5</span></div>
+    <div className="table-surface"><div className="table-top"><div className="table-league"><span className="table-league-emblem"><FootballLogo name={selected.name} src={verifiedLeagueLogos[selected.slug]} size={34} kind="league"/></span><div><strong>{selected.name}</strong><small>2026/27 SEASON</small></div></div><span className="table-badge">TOP 5</span></div>
       <div className="table-columns"><span>#</span><span>CLUB</span><span>PL</span><span>PTS</span></div>
       {state.loading?<Skeleton/>:state.tableError?<div className="data-empty table-empty"><TriangleAlert size={23}/><p>{state.tableError}</p></div>:state.standings.length?state.standings.slice(0,5).map(row=><div className="table-item" key={row.team+'-'+row.position}><span className="table-rank">{row.position}</span><span className="table-name"><FootballLogo name={row.team} src={row.teamLogo} size={28} className="table-logo"/><span>{row.team}</span></span><span>{row.played??'—'}</span><strong>{row.points??'—'}</strong></div>):<div className="data-empty table-empty"><p>No verified table returned for this league.</p></div>}
       <p className="table-footer"><Info size={13}/> A PARTIAL TABLE. FULL STANDINGS ARE NOT AVAILABLE ON THE FREE PLAN.</p>
