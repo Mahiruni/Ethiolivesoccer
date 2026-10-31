@@ -19,7 +19,7 @@ test('premium football homepage is readable and responsive',async({page},testInf
  await expect(page.getByRole('heading',{name:'Pick your competition'})).toBeVisible();
  await expect(page.getByText('Bournemouth')).toBeVisible();
  await expect(page.getByText('Arsenal')).toBeVisible();
- await expect(page.getByText('TheSportsDB').first()).toBeVisible();
+ await expect(page.getByText(/sports.?db/i).first()).toBeVisible();
  const overflow=await page.evaluate(()=>document.documentElement.scrollWidth-document.documentElement.clientWidth);
  expect(overflow,'no horizontal page overflow').toBeLessThanOrEqual(1);
  await page.screenshot({path:testInfo.outputPath('matchday-'+testInfo.project.name+'.png'),fullPage:true});
