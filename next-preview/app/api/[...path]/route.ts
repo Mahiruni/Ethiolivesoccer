@@ -2,6 +2,7 @@ import { NextRequest, NextResponse } from 'next/server';
 import {LEAGUES,leagueFromSlug,fixtures,standings,fixtureById,todayEAT,FeedError,season} from '@/lib/football';
 import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteTeams,modifyFavorite,preferences,savePreferences} from '@/lib/auth';
 import {poll,vote,chat,postChat,predictions} from '@/lib/community';
+import {stories,storyBySlug} from '@/lib/news';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -30,6 +31,8 @@ export async function GET(request:NextRequest,{params}:Ctx){
     leagues:LEAGUES,notice:'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
   });
   if(endpoint==='competitions')return json(LEAGUES);
+  if(endpoint==='news')return json(await stories());
+  if(path[0]==='news'&&path.length===2){const article=await storyBySlug(path[1]);return article?json(article):json({error:'Article not found.'},404)}
   if(endpoint==='matches'){
     const date=request.nextUrl.searchParams.get('date')||todayEAT();
     const league=leagueFromSlug(request.nextUrl.searchParams.get('league'));
