@@ -1,3 +1,4 @@
+import {premierMatch} from '@/lib/premier-league';
 import type { Metadata } from 'next';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
@@ -7,13 +8,13 @@ import MatchCommunity from '@/components/MatchCommunity';
 import FootballLogo from '@/components/FootballLogo';
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
- const {id}=await params;try{const match=await fixtureById(id);return {title:match.home+' vs '+match.away,description:match.league+' reported fixture, score and kickoff details.'}}
+ const {id}=await params;try{const match=await (id.startsWith('fd-')?premierMatch(id):fixtureById(id));return {title:match.home+' vs '+match.away,description:match.league+' reported fixture, score and kickoff details.'}}
  catch{return {title:'Match details'}}
 }
 export default async function MatchPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  let match;
- try{match=await fixtureById(id)}catch(e){if(e instanceof FeedError&&e.status===404)notFound();throw e}
+ try{match=await (id.startsWith('fd-')?premierMatch(id):fixtureById(id))}catch(e){if(e instanceof FeedError&&e.status===404)notFound();throw e}
  const localId=await localMatchId(id);
  const scored=match.homeScore!==null&&match.awayScore!==null;
  const date=match.date?new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:'Africa/Addis_Ababa'}).format(new Date(match.date)):'Kickoff time not verified';
