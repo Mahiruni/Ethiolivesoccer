@@ -4,11 +4,28 @@ const legacyApp = require('./legacy-server');
 
 const app = express();
 
-// Gemini is the sole upstream source for public football scores, fixtures,
-// standings and football news. Search grounding is performed server-side.
+// Prefer the dedicated sports data feed for scores and standings when its
+// server-side key is set. These existing Express routes return provider fixture
+// IDs and database-local match IDs, enabling predictions and match-day chat.
+// Never treat a generative model's search results as authoritative live scores.
+const sportsProviderEnabled = Boolean(process.env.API_FOOTBALL_KEY);
+const sportsPaths = new Set([
+  '/api/provider/status', '/api/matches', '/api/standings', '/api/teams'
+]);
+app.use((req, res, next) => {
+  const providerDetails = /^\/api\/match\/p-\d+\/details$/.test(req.path);
+  if (sportsProviderEnabled && (sportsPaths.has(req.path) || providerDetails)) {
+    return legacyApp(req, res, next);
+  }
+  return next();
+});
+
+// The existing Gemini-backed routes remain available for editorial/news
+// research and static competition catalog, but not the primary scoreboard
+// when an authoritative sports provider is configured.
 app.use('/api', geminiRouter);
 
-// Authentication, community, push and static-site behavior remains unchanged.
+// Auth, community, push notifications, and SPA serving.
 app.use(legacyApp);
 
 if (require.main === module) {
