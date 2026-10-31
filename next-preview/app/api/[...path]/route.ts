@@ -87,7 +87,7 @@ export async function DELETE(request:NextRequest,{params}:Ctx){
  try{
   if(path[0]==='me'&&path[1]==='favorites'&&path.length===3)
    return json(await modifyFavorite(userFromRequest(request)!,path[2],'DELETE'));
-  if(endpoint==='push/subscribe')return json(await unsubscribe(userFromRequest(request)!,await body(request)));
+  if(path.join('/')==='push/subscribe')return json(await unsubscribe(userFromRequest(request)!,await body(request)));
   return json({error:'This delete route has not been migrated.',code:'MIGRATION_INCOMPLETE'},501);
  }catch(error){return fail(error)}
 }
