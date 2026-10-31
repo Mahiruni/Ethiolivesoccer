@@ -52,18 +52,71 @@ async function getProfile(db,userId){
   return{user:{id:r.id,username:r.username,email:r.email,display_name:r.display_name,avatar_seed:r.avatar_seed,created_at:r.created_at},preferences:{preferred_language:r.preferred_language||'en',theme:r.theme||'system',notify_goals:r.notify_goals??true,notify_kickoff:r.notify_kickoff??true,notify_halftime:r.notify_halftime??false,notify_fulltime:r.notify_fulltime??true,notify_red_cards:r.notify_red_cards??true,notify_news:r.notify_news??false}};
 }
 
+const providerPending = new Map();
+const cacheSeconds = Number(process.env.API_FOOTBALL_CACHE_SECONDS);
+// The free API-Football plan has only 100 requests per day. Default to 1 hour;
+// when on a higher-volume plan, configure API_FOOTBALL_CACHE_SECONDS=60.
+// League discovery and standings change less frequently.
+const quotaSafeCacheMs = Number.isFinite(cacheSeconds) && cacheSeconds >= 60
+  ? Math.min(cacheSeconds, 86400) * 1000 : 60 * 60 * 1000;
+function effectiveProviderTtl(endpoint, requested) {
+  if (endpoint === 'leagues') return Math.max(requested, 24 * 60 * 60 * 1000);
+  if (endpoint === 'standings') return Math.max(requested, 6 * 60 * 60 * 1000);
+  return Math.max(requested, quotaSafeCacheMs);
+}
 function cacheGet(key,maxAgeMs){const hit=providerCache.get(key);if(!hit||Date.now()-hit.at>maxAgeMs){providerCache.delete(key);return null;}return hit.value;}
 function cacheSet(key,value){providerCache.set(key,{at:Date.now(),value});return value;}
-async function footballApi(endpoint,params={},ttl=15000){
+async function footballApi(endpoint,params={},requestedTtl=15000){
   if(!providerEnabled)throw Object.assign(new Error('Live football provider is not configured.'),{status:503});
   const qs=new URLSearchParams(Object.entries(params).filter(([,v])=>v!==undefined&&v!==null&&v!=='').map(([k,v])=>[k,String(v)]));
-  const key=`${endpoint}?${qs}`;const cached=cacheGet(key,ttl);if(cached)return cached;
-  const response=await fetch(`${FOOTBALL_API_BASE}/${endpoint}?${qs}`,{headers:{'x-apisports-key':FOOTBALL_API_KEY,'accept':'application/json'}});
-  const data=await response.json().catch(()=>null);
-  if(!response.ok)throw Object.assign(new Error(`Football provider request failed (${response.status}).`),{status:502,data});
-  const errors=data?.errors&&Object.keys(data.errors).length?data.errors:null;
-  if(errors)throw Object.assign(new Error('Football provider returned an error.'),{status:502,data:errors});
-  return cacheSet(key,data?.response??[]);
+  const key=`${endpoint}?${qs}`, ttl=effectiveProviderTtl(endpoint,requestedTtl);
+  const cached=cacheGet(key,ttl);
+  if(cached!==null)return cached;
+  if(providerPending.has(key))return providerPending.get(key);
+
+  const pending=(async()=>{
+    const db=getPool();
+    if(db) {
+      try {
+        const {rows}=await db.query(
+          'SELECT payload FROM public.sports_provider_cache WHERE cache_key=$1 AND expires_at>NOW()',
+          [key]
+        );
+        if(rows.length)return cacheSet(key,rows[0].payload);
+      } catch(error) {
+        // Older deployments without the cache migration still fetch live data.
+        console.warn('Football cache read skipped:',error.message);
+      }
+    }
+    const response=await fetch(`${FOOTBALL_API_BASE.replace(/\/$/,'')}/${endpoint}?${qs}`,{
+      headers:{'x-apisports-key':FOOTBALL_API_KEY,'accept':'application/json'},
+      signal:AbortSignal.timeout(12000)
+    });
+    const data=await response.json().catch(()=>null);
+    if(!response.ok)throw Object.assign(
+      new Error(response.status===429?'Football data rate limit reached. Try again later.':`Football provider request failed (${response.status}).`),
+      {status:response.status===429?429:502}
+    );
+    const errors=data?.errors&&Object.keys(data.errors).length?data.errors:null;
+    if(errors)throw Object.assign(new Error('Football data provider returned an error.'),{status:502});
+    const value=data?.response??[];
+    if(db) {
+      try {
+        await db.query(
+          `INSERT INTO public.sports_provider_cache(cache_key,payload,expires_at)
+           VALUES($1,$2::jsonb,NOW()+($3::bigint * INTERVAL '1 millisecond'))
+           ON CONFLICT(cache_key) DO UPDATE SET
+           payload=EXCLUDED.payload,fetched_at=NOW(),expires_at=EXCLUDED.expires_at`,
+          [key,JSON.stringify(value),ttl]
+        );
+      } catch(error) {
+        console.warn('Football cache write skipped:',error.message);
+      }
+    }
+    return cacheSet(key,value);
+  })();
+  providerPending.set(key,pending);
+  try{return await pending;}finally{providerPending.delete(key);}
 }
 async function resolveProviderLeague(){
   if(FOOTBALL_LEAGUE_ID)return{id:Number(FOOTBALL_LEAGUE_ID),season:Number(FOOTBALL_SEASON)||new Date().getUTCFullYear(),name:'Ethiopian Premier League'};

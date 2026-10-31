@@ -27,6 +27,28 @@ For a fresh database, run:
 psql "$DATABASE_URL" -f schema.sql
 ```
 
+## Live football data (recommended)
+
+A dedicated API-Football key is recommended for verified scores, fixtures and standings.
+Get it from https://dashboard.api-football.com/ and add `API_FOOTBALL_KEY` in Vercel
+**Production** environment variables. The backend uses the provider routes automatically
+when the key is present. Without that key, the old Gemini provider is still used for
+public football data and may fail with HTTP 429 if its quota is exhausted.
+
+API-Football free has only 100 calls/day; the backend defaults to a 1-hour shared
+cache across Vercel instances. This is suitable for testing, **not low-latency live
+scores**. For a paid/higher-quota plan, set `API_FOOTBALL_CACHE_SECONDS=60` to
+refresh in minutes. Competition-specific livescore coverage may vary.
+
+With Supabase, use the **Transaction pooler** Postgres connection (usually port
+6543), store it as `DATABASE_URL` in Vercel, and run migrations from the repository.
+The shared cache is installed using `migrations/005_sports_provider_cache.sql`.
+Keep all API keys out of Git and out of browser-accessible environment variables.
+
+ChatGPT is not a replacement for a sports feed. OpenAI API with web search can
+provide sourced football news/analysis in a future independent editorial pipeline;
+it has separate API credentials and usage charges.
+
 ## Required Vercel environment variables
 
 ```env
@@ -45,4 +67,4 @@ Vite runs the React development frontend and proxies `/api` to the Express serve
 
 ## Health check
 
-Visit `/api/health`. A working database returns `database: "connected"`. If `DATABASE_URL` is not configured, the public frontend still loads with demo score data while database-backed account features remain unavailable.
+Visit `/api/health`. A working database returns `database: "connected"`. If `DATABASE_URL` is not configured, the public frontend remains available, but backend account features cannot work. The application does not invent or fabricate live match scores.
