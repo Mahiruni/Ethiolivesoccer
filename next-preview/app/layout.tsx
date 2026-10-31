@@ -1,5 +1,6 @@
 import type { Metadata, Viewport } from 'next';
 import './globals.css';
+import SiteFrame from '@/components/SiteFrame';
 
 export const metadata:Metadata={
   metadataBase:new URL('https://ethiolivesoccer.vercel.app'),
@@ -11,5 +12,5 @@ export const metadata:Metadata={
 };
 export const viewport:Viewport={width:'device-width',initialScale:1,themeColor:'#07111d',viewportFit:'cover'};
 export default function RootLayout({children}:{children:React.ReactNode}){
-  return <html lang="en"><body>{children}</body></html>;
+  return <html lang="en"><body><SiteFrame>{children}</SiteFrame></body></html>;
 }
