@@ -10,7 +10,7 @@ export default defineConfig({
   {name:'android-360',use:{...devices['Pixel 5'],viewport:{width:360,height:780}}},
   {name:'android-390',use:{...devices['Pixel 5'],viewport:{width:390,height:844}}},
   {name:'android-430',use:{...devices['Pixel 5'],viewport:{width:430,height:932}}},
-  {name:'tablet',use:{...devices['iPad Mini']}},
+  {name:'tablet',use:{...devices['Desktop Chrome'],viewport:{width:768,height:1024},hasTouch:true,isMobile:true}},
   {name:'desktop',use:{...devices['Desktop Chrome'],viewport:{width:1440,height:900}}}
  ],
  webServer:{command:'node node_modules/next/dist/bin/next start -p 3100',url:'http://127.0.0.1:3100/api/health',reuseExistingServer:!process.env.CI,timeout:120000},
