@@ -43,6 +43,15 @@ jobs:
           auth_status="$(curl -s -o /tmp/ethiolive-auth.json -w '%{http_code}' -H 'Content-Type: application/json' -d '{"email":"sample@example.com","password":"examplepassword"}' http://127.0.0.1:3000/api/auth/login)"
           [ "$auth_status" = "503" ]
           node -e 'const x=require("/tmp/ethiolive-auth.json");if(x.code!=="AUTH_NOT_CONFIGURED")process.exit(1)'
+          # Prevent any anonymous access to private account and community resources.
+          for endpoint in auth/me me/favorites me/preferences me/predictions; do
+            response="$(curl -s -o /tmp/ethiolive-protected.json -w '%{http_code}' "http://127.0.0.1:3000/api/$endpoint")"
+            [ "$response" = "401" ] || { echo "Unauthorized API exposed: $endpoint ($response)"; exit 1; }
+          done
+          vote_status="$(curl -s -o /tmp/ethiolive-vote.json -w '%{http_code}' -H 'Content-Type: application/json' -d '{"vote_choice":"home"}' http://127.0.0.1:3000/api/polls/1)"
+          [ "$vote_status" = "401" ] || { echo "Unauthenticated vote accepted"; exit 1; }
+          curl -fsS http://127.0.0.1:3000/api/push/config > /tmp/ethiolive-push.json
+          curl -fsS http://127.0.0.1:3000/api/news > /tmp/ethiolive-news.json
           echo "Next.js migration preview HTTP smoke passed"
       - name: Install Chromium for responsive browser tests
         run: npx playwright install --with-deps chromium
