@@ -1,6 +1,6 @@
 import 'server-only';
 import { Pool } from 'pg';
-import {approvedVisual,approvedById} from './sports-identity';
+import {approvedVisual,approvedById,providerIdentity} from './sports-identity';
 
 export const LEAGUES = [
   {slug:'premier-league', id:4328, name:'Premier League', short:'PL', country:'England', label:'ENG', accent:'#b3f368'},
@@ -73,16 +73,16 @@ export function mapFixture(item:Record<string,unknown>,league:League):Fixture|nu
     country:league.country,date,home:String(item.strHomeTeam),away:String(item.strAwayTeam),
     homeScore,awayScore,
     homeTeamId:item.idHomeTeam?String(item.idHomeTeam):null,awayTeamId:item.idAwayTeam?String(item.idAwayTeam):null,
-    homeLogo:approvedVisual('team',String(item.idHomeTeam||''),item.strHomeTeamBadge,String(item.strHomeTeam)).imageUrl||approvedById('team',String(item.idHomeTeam||''),String(item.strHomeTeam)).imageUrl,
-    awayLogo:approvedVisual('team',String(item.idAwayTeam||''),item.strAwayTeamBadge,String(item.strAwayTeam)).imageUrl||approvedById('team',String(item.idAwayTeam||''),String(item.strAwayTeam)).imageUrl,
-    leagueLogo:approvedVisual('league',league.id,item.strLeagueBadge,league.name).imageUrl||approvedById('league',league.id,league.name).imageUrl,
+    homeLogo:providerIdentity('team',String(item.idHomeTeam||''),item.strHomeTeamBadge,String(item.strHomeTeam)).imageUrl||approvedById('team',String(item.idHomeTeam||''),String(item.strHomeTeam)).imageUrl,
+    awayLogo:providerIdentity('team',String(item.idAwayTeam||''),item.strAwayTeamBadge,String(item.strAwayTeam)).imageUrl||approvedById('team',String(item.idAwayTeam||''),String(item.strAwayTeam)).imageUrl,
+    leagueLogo:providerIdentity('league',league.id,item.strLeagueBadge,league.name).imageUrl||approvedById('league',league.id,league.name).imageUrl,
     status,statusLabel:String(item.strStatus|| (status==='SCORED'?'Score reported, status unconfirmed':'Scheduled')),
     venue:item.strVenue?String(item.strVenue):null};
 }
 export function mapStanding(item:Record<string,unknown>,index:number):Standing{
   return {position:numberOrNull(item.intRank)??index+1,team:String(item.strTeam||'Unknown'),
     teamId:item.idTeam?String(item.idTeam):null,
-    teamLogo:approvedVisual('team',String(item.idTeam||''),item.strTeamBadge,String(item.strTeam||'Unknown')).imageUrl||approvedById('team',String(item.idTeam||''),String(item.strTeam||'Unknown')).imageUrl,
+    teamLogo:providerIdentity('team',String(item.idTeam||''),item.strTeamBadge,String(item.strTeam||'Unknown')).imageUrl||approvedById('team',String(item.idTeam||''),String(item.strTeam||'Unknown')).imageUrl,
     played:numberOrNull(item.intPlayed),won:numberOrNull(item.intWin),drawn:numberOrNull(item.intDraw),
     lost:numberOrNull(item.intLoss),
     difference:item.intGoalDifference===null||item.intGoalDifference===undefined?null:Number(item.intGoalDifference),
@@ -128,15 +128,35 @@ async function collection(endpoint:string,field:'events'|'table',ttl:number):Pro
   inflight.set(key,work);
   try{return await work}finally{inflight.delete(key)}
 }
+async function teamArtwork(league:League){
+ try{
+  const response=await fetch(ORIGIN+'/lookup_all_teams.php?id='+league.id,{next:{revalidate:21600},signal:AbortSignal.timeout(9000)});
+  if(!response.ok)return new Map<string,string>();
+  const data=await response.json() as {teams?:Record<string,unknown>[]};
+  const logos=new Map<string,string>();
+  for(const item of Array.isArray(data.teams)?data.teams:[]){
+   const id=String(item.idTeam||'');
+   const identity=providerIdentity('team',id,item.strBadge,String(item.strTeam||''));
+   if(identity.imageUrl)logos.set(id,identity.imageUrl);
+  }
+  return logos;
+ }catch{return new Map<string,string>()}
+}
+function withArtwork<T extends {teamId?:string|null,teamLogo?:string|null,homeTeamId?:string|null,awayTeamId?:string|null,homeLogo?:string|null,awayLogo?:string|null}>(rows:T[],artwork:Map<string,string>){
+ return rows.map(row=>({...row,
+  ...('teamLogo' in row?{teamLogo:row.teamLogo||artwork.get(row.teamId||'')||null}:{}),
+  ...('homeLogo' in row?{homeLogo:row.homeLogo||artwork.get(row.homeTeamId||'')||null,awayLogo:row.awayLogo||artwork.get(row.awayTeamId||'')||null}:{})
+ })) as T[];
+}
 export async function fixtures(league:League,date:string){
   if(!isValidDate(date))throw new FeedError(400,'INVALID_DATE','Choose a valid date in YYYY-MM-DD format.');
   const endpoint='eventsday.php?d='+encodeURIComponent(date)+'&l='+league.id;
   const rows=await collection(endpoint,'events',date===todayEAT()?15*60000:6*3600000);
-  return rows.map(x=>mapFixture(x,league)).filter((x):x is Fixture=>Boolean(x));
+  return withArtwork(rows.map(x=>mapFixture(x,league)).filter((x):x is Fixture=>Boolean(x)),await teamArtwork(league));
 }
 export async function standings(league:League){
   const rows=await collection('lookuptable.php?l='+league.id+'&s='+season(),'table',3600000);
-  return rows.map(mapStanding);
+  return withArtwork(rows.map(mapStanding),await teamArtwork(league));
 }
 export async function fixtureById(id:string){
   if(!/^tsdb-\d{1,15}$/.test(id))throw new FeedError(400,'INVALID_MATCH','Invalid match identifier.');
@@ -146,5 +166,5 @@ export async function fixtureById(id:string){
   const league=LEAGUES.find(x=>String(x.id)===String(item.idLeague))||LEAGUES[0];
   const result=mapFixture(item,league);
   if(!result)throw new FeedError(404,'MATCH_INCOMPLETE','This match has incomplete source data.');
-  return result;
+  return withArtwork([result],await teamArtwork(league))[0];
 }
