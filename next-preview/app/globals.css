@@ -129,3 +129,9 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
 .article-source a{margin-left:auto;color:var(--lime);display:inline-flex;align-items:center;gap:8px;font-weight:800}
 @media(max-width:850px){.story-grid{grid-template-columns:1fr 1fr}.story-card.featured{grid-column:span 2}}
 @media(max-width:650px){.news-page,.article-page{padding-top:18px;padding-bottom:100px}.news-hero{padding:26px 20px;border-radius:17px}.news-hero h1{font-size:38px}.news-hero p{font-size:12px}.story-grid{grid-template-columns:1fr;gap:12px}.story-card.featured{grid-column:span 1}.story-card.featured .story-card-copy h2{font-size:23px}.story-card-art,.story-card.featured .story-card-art{min-height:115px;padding:17px}.story-card-copy{padding:16px}.story-card-copy h2{font-size:19px}.article-head{padding:29px 19px}.article-head>p{font-size:13px}.article-content{padding:25px 19px}.article-content p{font-size:14px;line-height:1.75}.article-source{padding:16px 19px;flex-wrap:wrap}}
+
+/* Small-screen edge alignment: horizontal league scrolling stays inside viewport. */
+@media(max-width:700px){
+ .league-pills{margin-left:0;margin-right:0;padding-left:0;padding-right:0}
+ .fixture-shell,.table-surface,.hero,.account-panel,.news-hero{max-width:100%}
+}
