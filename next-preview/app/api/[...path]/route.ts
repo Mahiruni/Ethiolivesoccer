@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from 'next/server';
 import {LEAGUES,leagueFromSlug,fixtures,standings,fixtureById,todayEAT,FeedError,season} from '@/lib/football';
 import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteTeams,modifyFavorite,preferences,savePreferences} from '@/lib/auth';
+import {poll,vote,chat,postChat,predictions} from '@/lib/community';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -42,6 +43,9 @@ export async function GET(request:NextRequest,{params}:Ctx){
   if(endpoint==='auth/me')return json(await profile(userFromRequest(request)!));
   if(endpoint==='me/favorites')return json(await favoriteTeams(userFromRequest(request)!));
   if(endpoint==='me/preferences')return json(await preferences(userFromRequest(request)!));
+  if(endpoint==='me/predictions')return json(await predictions(userFromRequest(request)!));
+  if(path[0]==='polls'&&path.length===2)return json(await poll(path[1],userFromRequest(request,false)));
+  if(path[0]==='chat'&&path.length===2)return json(await chat(path[1]));
   return json({error:'This API route has not been migrated to Next.js yet.',code:'MIGRATION_INCOMPLETE'},501);
  }catch(error){return fail(error)}
 }
@@ -52,6 +56,8 @@ export async function POST(request:NextRequest,{params}:Ctx){
   if(endpoint==='auth/login')return json(await login(await body(request)));
   if(path[0]==='me'&&path[1]==='favorites'&&path.length===3)
    return json(await modifyFavorite(userFromRequest(request)!,path[2],'POST'),201);
+  if(path[0]==='polls'&&path.length===2){const input=await body(request);return json(await vote(path[1],userFromRequest(request)!,input?.vote_choice),201)}
+  if(path[0]==='chat'&&path.length===2){const input=await body(request);return json(await postChat(path[1],userFromRequest(request)!,input?.message_text),201)}
   return json({error:'Community/push posting remains in the existing production service during migration.',code:'MIGRATION_INCOMPLETE'},501);
  }catch(error){return fail(error)}
 }
