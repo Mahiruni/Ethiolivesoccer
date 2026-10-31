@@ -1,3 +1,4 @@
+import {premierFixtures,premierStandings,premierMatch} from '@/lib/premier-league';
 import { NextRequest, NextResponse } from 'next/server';
 import {LEAGUES,leagueFromSlug,fixtures,standings,fixtureById,todayEAT,FeedError,season} from '@/lib/football';
 import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteTeams,modifyFavorite,preferences,savePreferences} from '@/lib/auth';
@@ -25,7 +26,7 @@ export async function GET(request:NextRequest,{params}:Ctx){
  const {path}=await params;const endpoint=path.join('/');
  try{
   if(endpoint==='health')return json({ok:true,service:'EthioLiveScores Next.js preview',
-   footballProvider:'TheSportsDB',legacyAuthMigrated:true,productionReady:false,
+   footballProvider:process.env.FOOTBALL_DATA_API_KEY?'football-data.org (PL) + TheSportsDB':'TheSportsDB',legacyAuthMigrated:true,productionReady:false,
    accountConfigured:Boolean(process.env.DATABASE_URL&&process.env.JWT_SECRET&&process.env.JWT_SECRET.length>=32)});
   if(endpoint==='provider/status')return json({
     configured:true,provider:'TheSportsDB',realtime:false,limited:true,
@@ -54,11 +55,11 @@ export async function GET(request:NextRequest,{params}:Ctx){
   if(endpoint==='matches'){
     const date=request.nextUrl.searchParams.get('date')||todayEAT();
     const league=leagueFromSlug(request.nextUrl.searchParams.get('league'));
-    return json(await fixtures(league,date));
+    return json(league.slug==='premier-league'&&process.env.FOOTBALL_DATA_API_KEY?await premierFixtures(date):await fixtures(league,date));
   }
-  if(endpoint==='standings')return json(await standings(leagueFromSlug(request.nextUrl.searchParams.get('league'))));
+  if(endpoint==='standings'){const league=leagueFromSlug(request.nextUrl.searchParams.get('league'));return json(league.slug==='premier-league'&&process.env.FOOTBALL_DATA_API_KEY?await premierStandings():await standings(league));}
   if(path[0]==='match'&&path.length===3&&path[2]==='details')
-    return json({match:await fixtureById(path[1]),events:[],lineups:[],statistics:[],h2h:[],
+    return json({match:path[1].startsWith('fd-')?await premierMatch(path[1]):await fixtureById(path[1]),events:[],lineups:[],statistics:[],h2h:[],
       coverage:{partialFree:true,liveEvents:false},
       notice:'The free API cannot verify full live events, lineups, or statistics.'});
   if(endpoint==='auth/me')return json(await profile(userFromRequest(request)!));
