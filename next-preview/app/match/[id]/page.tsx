@@ -4,6 +4,7 @@ import {notFound} from 'next/navigation';
 import {fixtureById,FeedError} from '@/lib/football';
 import {localMatchId} from '@/lib/community';
 import MatchCommunity from '@/components/MatchCommunity';
+import FootballLogo, {CountryFlag} from '@/components/FootballLogo';
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;try{const match=await fixtureById(id);return {title:match.home+' vs '+match.away,description:match.league+' reported fixture, score and kickoff details.'}}
@@ -19,13 +20,13 @@ export default async function MatchPage({params}:{params:Promise<{id:string}>}){
  return <main className="wrap match-detail-layout">
   <Link href={'/league/'+match.leagueSlug} className="back-link">← {match.league}</Link>
   <section className="match-detail-hero">
-    <span className="eyebrow">{match.league} / MATCH CENTER</span>
+    <span className="eyebrow"><CountryFlag country={match.country}/>{match.league} / MATCH CENTER</span>
     <div className="detail-scoreboard">
-      <div className="detail-team"><span className="detail-team-badge">{match.home.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><h1>{match.home}</h1></div>
+      <div className="detail-team"><FootballLogo name={match.home} src={match.homeLogo} size={64} className="detail-logo"/><h1>{match.home}</h1></div>
       <div className="detail-result"><span className="match-status">{match.status==='LIVE'?'● LIVE':match.status==='FT'?'FULL TIME':match.status==='SCORED'?'RESULT UNCONFIRMED':match.status==='PST'?'POSTPONED':'SCHEDULED'}</span>
         <strong>{scored?match.homeScore+' : '+match.awayScore:'VS'}</strong><small>{date} · EAT</small>
       </div>
-      <div className="detail-team"><span className="detail-team-badge">{match.away.split(' ').map(x=>x[0]).slice(0,2).join('')}</span><h1>{match.away}</h1></div>
+      <div className="detail-team"><FootballLogo name={match.away} src={match.awayLogo} size={64} className="detail-logo"/><h1>{match.away}</h1></div>
     </div>
     <p className="muted centered">Free data by TheSportsDB. Match status, statistics, lineups and event coverage may be delayed or unavailable.</p>
   </section>

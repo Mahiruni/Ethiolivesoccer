@@ -1,14 +1,14 @@
 name: Next.js 16 migration validation
 on:
   push:
-    branches: [migration/next16-app-router]
+    branches: [migration/next16-app-router, feat/verified-sports-identity]
   pull_request:
     branches: [main]
 permissions:
   contents: read
 jobs:
   next-preview:
-    if: github.head_ref == 'migration/next16-app-router' || github.ref == 'refs/heads/migration/next16-app-router'
+    if: github.head_ref == 'migration/next16-app-router' || github.ref == 'refs/heads/migration/next16-app-router' || github.head_ref == 'feat/verified-sports-identity' || github.ref == 'refs/heads/feat/verified-sports-identity'
     runs-on: ubuntu-latest
     timeout-minutes: 15
     defaults:

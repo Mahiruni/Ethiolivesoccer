@@ -24,7 +24,7 @@ export default function SiteFrame({children}:{children:React.ReactNode}){
   {drawer&&<nav className="mobile-drawer" aria-label="Menu">{items.map(({name,href,Icon})=><Link key={href} href={href} onClick={()=>setDrawer(false)}><Icon size={18}/>{name}<ArrowUpRight size={15}/></Link>)}</nav>}
   <div className="site-ribbon"><div className="wrap ribbon-inner"><span className="ribbon-dot"/><strong>GLOBAL FOOTBALL</strong><span>PREMIER LEAGUE</span><i/><span>LA LIGA</span><i/><span>BUNDESLIGA</span><i/><span>SERIE A</span><i/><span>LIGUE 1</span><span className="ribbon-note">FREE DATA · PARTIAL COVERAGE</span></div></div>
   {children}
-  <footer className="site-footer"><div className="wrap footer-inner"><span>© 2026 ETHIOLIVE · A BETTER MATCHDAY.</span><span>DATA BY <a href="https://www.thesportsdb.com/" rel="noreferrer" target="_blank">THESPORTSDB</a> · FIXTURES & TABLES MAY BE PARTIAL</span></div></footer>
+  <footer className="site-footer"><div className="wrap footer-inner"><span>© 2026 ETHIOLIVE · A BETTER MATCHDAY.</span><span><Link href="/credits">ARTWORK CREDITS</Link> · DATA BY <a href="https://www.thesportsdb.com/" rel="noreferrer" target="_blank">THESPORTSDB</a> · FIXTURES & TABLES MAY BE PARTIAL</span></div></footer>
   <nav className="bottom-nav" aria-label="Mobile tabs">{items.map(({name,href,Icon})=><Link key={href} href={href} aria-current={isActive(href)?'page':undefined} className={isActive(href)?'active':''}><Icon size={20}/><span>{name==='Matchday'?'Matches':name==='Fan zone'?'Fans':name}</span></Link>)}</nav>
  </>
 }
