@@ -27,7 +27,7 @@ jobs:
       - name: Smoke-check App Router and public API
         run: |
           set -euo pipefail
-          npm start > /tmp/ethiolive-next.log 2>&1 &
+          node node_modules/next/dist/bin/next start > /tmp/ethiolive-next.log 2>&1 &
           server_pid=$!
           trap 'kill $server_pid || true' EXIT
           for i in $(seq 1 30); do
