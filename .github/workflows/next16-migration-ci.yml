@@ -40,3 +40,16 @@ jobs:
           curl -fsS http://127.0.0.1:3000/league/la-liga > /tmp/ethiolive-league.html
           grep -q "La Liga" /tmp/ethiolive-league.html
           echo "Next.js migration preview HTTP smoke passed"
+      - name: Install Chromium for responsive browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Run mobile, tablet and desktop experience tests
+        run: npx playwright test
+      - name: Save responsive screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next16-responsive-browser-results
+          path: |
+            next-preview/test-results/
+            next-preview/playwright-report/
+          retention-days: 7
