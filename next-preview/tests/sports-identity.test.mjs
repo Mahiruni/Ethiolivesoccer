@@ -43,7 +43,7 @@ test('approved logos are also addressable by immutable provider ID on all screen
  assert.match(source,/return approvedVisual\(kind,providerId,item.sourceUrl,alt\)/);
  const api=read('app/api/[...path]/route.ts');
  assert.match(api,/assets\/coverage/);
- assert.match(api,/logo:approvedById\('league'/);
+ assert.match(api,/providerIdentity\('league'/);
  const dashboard=read('components/Matchday.tsx');
  assert.match(dashboard,/src=\{verifiedLeagueLogos\[l.slug\]\}/);
  assert.match(dashboard,/src=\{verifiedLeagueLogos\[selected.slug\]\}/);
