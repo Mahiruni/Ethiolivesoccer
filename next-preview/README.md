@@ -51,3 +51,27 @@ No scores are fabricated. No app-store rights are implied by the free sports API
 - [ ] Test rollback and cutover from existing Vite/Express deployment
 - [ ] Only then release reviewed Next.js code to current Vercel project
 
+
+## Authentic club and league logos — rights-gated release
+
+The match center, detailed match page, league selector and standings are wired to use
+TheSportsDB's stable team and competition IDs. The reusable FootballLogo component
+renders approved badge artwork with next/image, proper aspect ratios and neutral fallback.
+
+Third-party trademarks require individual legal permission or another applicable legal basis.
+Receiving image URLs through the free data API does not by itself clear third-party rights.
+See https://www.thesportsdb.com/docs_terms_of_use.php . Free-tier rights also exclude
+app-store publication.
+
+Run the Football artwork rights audit GitHub Action to generate a JSON candidate inventory
+with immutable provider ID, asset URL, source and blank permission fields. The pipeline
+never downloads artwork, asserts ownership or marks assets approved automatically.
+
+Once documentary evidence is reviewed, record exact asset, licensing, attribution and
+permission reference inside lib/sports-identity.ts in APPROVED_ARTWORK.
+Approved club crests and league logos will then appear automatically by immutable
+provider ID across fixtures, standings, league pills and match details.
+
+GET /api/assets/coverage reports the count of verified, reviewed image assets.
+English, Spanish, German, Italian and French national flags are displayed independently
+of third-party club and league trademarks.
