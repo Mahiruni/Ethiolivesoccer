@@ -4,6 +4,7 @@ import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteT
 import {poll,vote,chat,postChat,predictions} from '@/lib/community';
 import {stories,storyBySlug} from '@/lib/news';
 import {publicPushConfig,subscribe,unsubscribe,testPush} from '@/lib/push';
+import {approvedById,approvalCoverage} from '@/lib/sports-identity';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -31,7 +32,8 @@ export async function GET(request:NextRequest,{params}:Ctx){
     source:'https://www.thesportsdb.com/',season:season(),
     leagues:LEAGUES,notice:'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
   });
-  if(endpoint==='competitions')return json(LEAGUES);
+  if(endpoint==='competitions')return json(LEAGUES.map(l=>({...l,logo:approvedById('league',l.id,l.name).imageUrl})));
+  if(endpoint==='assets/coverage')return json({...approvalCoverage(),source:'reviewed-asset-registry',unreviewedArtworkPublished:false});
   if(endpoint==='push/config')return json(publicPushConfig());
   if(endpoint==='news')return json(await stories());
   if(path[0]==='news'&&path.length===2){const article=await storyBySlug(path[1]);return article?json(article):json({error:'Article not found.'},404)}
