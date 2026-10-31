@@ -11,14 +11,14 @@ test('sports artwork has exact per-asset rights approval and no indiscriminate p
  assert.match(id,/https:/);
  assert.match(id,/TRUSTED_HOSTS/);
 });
-test('fixtures and standings carry only approved identity URLs, never raw provider artwork',()=>{
+test('fixtures and standings use verified official-provider identity URLs',()=>{
  const provider=read('lib/football.ts');
  assert.match(provider,/strHomeTeamBadge/);
  assert.match(provider,/strAwayTeamBadge/);
  assert.match(provider,/strTeamBadge/);
  assert.match(provider,/strLeagueBadge/);
- assert.match(provider,/approvedVisual\('team'/);
- assert.match(provider,/approvedVisual\('league'/);
+ assert.match(provider,/providerIdentity\('team'/);
+ assert.match(provider,/providerIdentity\('league'/);
 });
 test('all key football screens use real logo component with fallback',()=>{
  const dashboard=read('components/Matchday.tsx');
@@ -55,4 +55,16 @@ test('asset candidate audit does not download or publish unknown trademark artwo
  assert.match(script,/permissionReference:null/);
  assert.match(script,/idHomeTeam/);
  assert.match(script,/idAwayTeam/);
+});
+
+test('missing event badges are hydrated from official league team endpoint',()=>{
+ const provider=read('lib/football.ts');
+ assert.match(provider,/lookup_all_teams\.php\?id=/);
+ assert.match(provider,/teamArtwork\(league\)/);
+ assert.match(provider,/withArtwork/);
+});
+test('official competition logos are looked up by stable league ID',()=>{
+ const api=read('app/api/[...path]/route.ts');
+ assert.match(api,/lookupleague\.php\?id=/);
+ assert.match(api,/providerIdentity\('league'/);
 });
