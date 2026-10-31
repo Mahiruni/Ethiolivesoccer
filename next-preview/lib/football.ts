@@ -1,6 +1,6 @@
 import 'server-only';
 import { Pool } from 'pg';
-import {approvedVisual} from './sports-identity';
+import {approvedVisual,approvedById} from './sports-identity';
 
 export const LEAGUES = [
   {slug:'premier-league', id:4328, name:'Premier League', short:'PL', country:'England', label:'ENG', accent:'#b3f368'},
@@ -73,16 +73,16 @@ export function mapFixture(item:Record<string,unknown>,league:League):Fixture|nu
     country:league.country,date,home:String(item.strHomeTeam),away:String(item.strAwayTeam),
     homeScore,awayScore,
     homeTeamId:item.idHomeTeam?String(item.idHomeTeam):null,awayTeamId:item.idAwayTeam?String(item.idAwayTeam):null,
-    homeLogo:approvedVisual('team',String(item.idHomeTeam||''),item.strHomeTeamBadge,String(item.strHomeTeam)).imageUrl,
-    awayLogo:approvedVisual('team',String(item.idAwayTeam||''),item.strAwayTeamBadge,String(item.strAwayTeam)).imageUrl,
-    leagueLogo:approvedVisual('league',league.id,item.strLeagueBadge,league.name).imageUrl,
+    homeLogo:approvedVisual('team',String(item.idHomeTeam||''),item.strHomeTeamBadge,String(item.strHomeTeam)).imageUrl||approvedById('team',String(item.idHomeTeam||''),String(item.strHomeTeam)).imageUrl,
+    awayLogo:approvedVisual('team',String(item.idAwayTeam||''),item.strAwayTeamBadge,String(item.strAwayTeam)).imageUrl||approvedById('team',String(item.idAwayTeam||''),String(item.strAwayTeam)).imageUrl,
+    leagueLogo:approvedVisual('league',league.id,item.strLeagueBadge,league.name).imageUrl||approvedById('league',league.id,league.name).imageUrl,
     status,statusLabel:String(item.strStatus|| (status==='SCORED'?'Score reported, status unconfirmed':'Scheduled')),
     venue:item.strVenue?String(item.strVenue):null};
 }
 export function mapStanding(item:Record<string,unknown>,index:number):Standing{
   return {position:numberOrNull(item.intRank)??index+1,team:String(item.strTeam||'Unknown'),
     teamId:item.idTeam?String(item.idTeam):null,
-    teamLogo:approvedVisual('team',String(item.idTeam||''),item.strTeamBadge,String(item.strTeam||'Unknown')).imageUrl,
+    teamLogo:approvedVisual('team',String(item.idTeam||''),item.strTeamBadge,String(item.strTeam||'Unknown')).imageUrl||approvedById('team',String(item.idTeam||''),String(item.strTeam||'Unknown')).imageUrl,
     played:numberOrNull(item.intPlayed),won:numberOrNull(item.intWin),drawn:numberOrNull(item.intDraw),
     lost:numberOrNull(item.intLoss),
     difference:item.intGoalDifference===null||item.intGoalDifference===undefined?null:Number(item.intGoalDifference),
