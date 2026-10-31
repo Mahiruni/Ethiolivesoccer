@@ -2,6 +2,7 @@
 import {useEffect,useState} from 'react';
 import {LockKeyhole,UserRound,Mail,Eye,EyeOff,ShieldCheck,LogOut,UserPlus,ArrowRight} from 'lucide-react';
 import NotificationControls from './NotificationControls';
+import FanActivity from './FanActivity';
 
 type Profile={user:{id:number;username:string;email:string;display_name?:string};preferences:{preferred_language:string;theme:string}};
 async function request(path:string,method='GET',body?:unknown,token?:string){
@@ -51,7 +52,7 @@ export default function AccountCenter(){
    <div className="account-intro"><span className="eyebrow">THE FAN ACCOUNT</span><h1>Closer to the game.</h1><p>One identity for your favorite clubs, matchday preferences and conversations. Existing EthioLiveScores accounts are preserved during migration.</p></div>
    <div className="account-grid">
     <section className="account-panel">
-     {profile?<><div className="account-avatar"><UserRound size={28}/></div><span className="eyebrow">YOUR MATCHDAY PROFILE</span><h2>{profile.user.display_name||profile.user.username}</h2><p className="muted">{profile.user.email}</p><form onSubmit={update} className="account-form"><label>Display name<input autoComplete="nickname" value={displayName} maxLength={80} onChange={e=>setDisplayName(e.target.value)} required/></label><button className="action-primary" type="submit" disabled={busy}>{busy?'Saving…':'Save profile'}</button></form><NotificationControls/><button className="account-signout" onClick={signOut}><LogOut size={16}/> Sign out</button></>:
+     {profile?<><div className="account-avatar"><UserRound size={28}/></div><span className="eyebrow">YOUR MATCHDAY PROFILE</span><h2>{profile.user.display_name||profile.user.username}</h2><p className="muted">{profile.user.email}</p><form onSubmit={update} className="account-form"><label>Display name<input autoComplete="nickname" value={displayName} maxLength={80} onChange={e=>setDisplayName(e.target.value)} required/></label><button className="action-primary" type="submit" disabled={busy}>{busy?'Saving…':'Save profile'}</button></form>{token&&<FanActivity token={token}/>}<NotificationControls/><button className="account-signout" onClick={signOut}><LogOut size={16}/> Sign out</button></>:
      <><div className="account-tabs"><button type="button" aria-pressed={mode==='login'} onClick={()=>{setMode('login');setError('')}} className={mode==='login'?'active':''}>Sign in</button><button type="button" aria-pressed={mode==='register'} className={mode==='register'?'active':''} onClick={()=>{setMode('register');setError('')}}>Create account</button></div>
      <h2>{mode==='login'?'Welcome back.':'Join the matchday.'}</h2><p className="muted">{mode==='login'?'Enter your existing account details.':'Register for your football community account.'}</p><form className="account-form" onSubmit={submit}>
       {mode==='register'&&<label>Username<span><UserRound size={17}/><input autoComplete="username" value={username} onChange={e=>setUsername(e.target.value)} minLength={3} maxLength={50} required/></span></label>}
@@ -62,7 +63,7 @@ export default function AccountCenter(){
      {error&&<p className="account-feedback error" role="alert">{error}</p>}
      {message&&<p className="account-feedback success" role="status">{message}</p>}
     </section>
-    <aside className="account-aside"><div className="account-icon"><ShieldCheck size={30}/></div><span className="eyebrow">SECURE MIGRATION</span><h2>Your account stays yours.</h2><p>The Next.js preview uses the same account database and JWT format as the existing production website when both secure server secrets are configured.</p><div className="account-proof"><div><ShieldCheck size={17}/> Existing user records stay in place</div><div><LockKeyhole size={17}/> Passwords remain bcrypt-hashed</div><div><UserPlus size={17}/> No duplicate accounts required</div></div><p className="account-warning">Account recovery, predictions, chat, push, and complete authorization checks are still being migrated. Do not treat this preview as a production-ready replacement.</p></aside>
+    <aside className="account-aside"><div className="account-icon"><ShieldCheck size={30}/></div><span className="eyebrow">SECURE MIGRATION</span><h2>Your account stays yours.</h2><p>The Next.js preview uses the same account database and JWT format as the existing production website when both secure server secrets are configured.</p><div className="account-proof"><div><ShieldCheck size={17}/> Existing user records stay in place</div><div><LockKeyhole size={17}/> Passwords remain bcrypt-hashed</div><div><UserPlus size={17}/> No duplicate accounts required</div></div><p className="account-warning">Account recovery, full device-level push delivery, abuse prevention, and database-backed end-to-end authorization still require verification. This preview is not production-ready.</p></aside>
    </div>
  </main>
 }
