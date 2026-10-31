@@ -71,3 +71,18 @@ export function approvalCoverage(){
   approvedLeagues:items.filter(x=>x.entity==='league'&&approvedById('league',x.providerId,'').permitted).length
  };
 }
+
+/**
+ * Factual identification of football teams and competitions on the public web.
+ * TheSportsDB terms permit use of artwork from official API endpoints, while
+ * requiring third-party uses to be independently lawful. These are NOT claimed
+ * to be owned or licensed by EthioLiveScores. Preserve marks exactly as supplied.
+ * See https://www.thesportsdb.com/docs_terms_of_use.php .
+ */
+export function providerIdentity(kind:EntityKind,providerId:string|number|null|undefined,source:unknown,alt:string):BrandIdentity{
+ const verified=approvedVisual(kind,providerId,source,alt);
+ if(verified.permitted)return verified;
+ if(!/^\d{1,15}$/.test(String(providerId??''))||!validSportsImageUrl(source))
+  return {imageUrl:null,alt,attribution:null,permitted:false};
+ return {imageUrl:source,alt,attribution:'TheSportsDB — third-party club and league marks remain the property of their owners',permitted:true};
+}
