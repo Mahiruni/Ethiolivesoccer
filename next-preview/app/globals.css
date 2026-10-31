@@ -158,3 +158,24 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
 /* Clip document-level subpixel scroll extents without disabling the scrollable
    league rail, date carousel, or other explicitly scrollable components. */
 html,body{overflow-x:clip}
+
+/* Account matchday data - compact favorites and predictions */
+.fan-activity{margin-top:24px;padding:22px;border-radius:16px;background:#0d2130;border:1px solid #365465}
+.fan-activity-heading{display:flex;align-items:center;justify-content:space-between;gap:10px}
+.fan-activity-heading h3{font-size:20px;margin:5px 0 0}
+.fan-refresh{height:36px;width:36px;display:grid;place-items:center;border:1px solid #426656;background:#203e3d;color:#c7f568;border-radius:10px}
+.fan-activity-subhead{display:flex;align-items:center;gap:8px;margin:20px 0 10px;font-size:11px;color:#d8e9f3}
+.fan-activity-subhead svg{color:#c7f568}
+.fan-activity-subhead small{margin-left:auto;font-variant-numeric:tabular-nums;color:#9eb8c5}
+.fan-favorites,.fan-predictions{display:flex;flex-direction:column;gap:7px}
+.fan-favorite{display:flex;align-items:center;gap:10px;padding:10px 11px;background:#173243;border:1px solid #304f5f;border-radius:10px}
+.fan-favorite-symbol{display:grid;place-items:center;height:30px;width:30px;flex:0 0 30px;border-radius:8px;background:#304b43;color:#d7ffa3;font-size:10px;font-weight:850}
+.fan-favorite strong{font-size:12px;overflow:hidden;text-overflow:ellipsis;white-space:nowrap;flex:1}
+.fan-favorite button{border:1px solid #4c5b64;border-radius:8px;background:#253644;color:#c3d5e2;width:32px;height:32px;display:grid;place-items:center}
+.fan-favorite button:hover{color:#ff8e9b;border-color:#8a4d5f}
+.fan-prediction{display:flex;align-items:center;justify-content:space-between;gap:12px;padding:12px 10px;border:1px solid #304e5e;background:#14303f;border-radius:10px;font-size:11px}
+.fan-prediction>span{color:#c7dce7}.fan-prediction>small{color:#c7f568;white-space:nowrap;font-size:10px;font-weight:750}
+.fan-empty{display:flex;align-items:center;gap:10px;border:1px dashed #355768;border-radius:10px;padding:16px;color:#97b4c3;font-size:11px}
+.fan-empty svg{color:#8ba9b7;flex:0 0 auto}
+.fan-activity-link{display:inline-flex;margin-top:16px;font-size:11px;color:#c7f568;font-weight:800}
+@media(max-width:700px){.fan-activity{padding:14px;margin-top:18px}.fan-prediction{flex-direction:column;align-items:flex-start;gap:4px}}
