@@ -88,7 +88,7 @@ async function footballApi(endpoint,params={},requestedTtl=15000){
         console.warn('Football cache read skipped:',error.message);
       }
     }
-    const response=await fetch(`${FOOTBALL_API_BASE.replace(/\\/$/,'')}/${endpoint}?${qs}`,{
+    const response=await fetch(`${FOOTBALL_API_BASE.replace(/\/$/,'')}/${endpoint}?${qs}`,{
       headers:{'x-apisports-key':FOOTBALL_API_KEY,'accept':'application/json'},
       signal:AbortSignal.timeout(12000)
     });
