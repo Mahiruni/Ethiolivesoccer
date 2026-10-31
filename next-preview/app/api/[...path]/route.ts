@@ -3,6 +3,7 @@ import {LEAGUES,leagueFromSlug,fixtures,standings,fixtureById,todayEAT,FeedError
 import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteTeams,modifyFavorite,preferences,savePreferences} from '@/lib/auth';
 import {poll,vote,chat,postChat,predictions} from '@/lib/community';
 import {stories,storyBySlug} from '@/lib/news';
+import {publicPushConfig,subscribe,unsubscribe,testPush} from '@/lib/push';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -31,6 +32,7 @@ export async function GET(request:NextRequest,{params}:Ctx){
     leagues:LEAGUES,notice:'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
   });
   if(endpoint==='competitions')return json(LEAGUES);
+  if(endpoint==='push/config')return json(publicPushConfig());
   if(endpoint==='news')return json(await stories());
   if(path[0]==='news'&&path.length===2){const article=await storyBySlug(path[1]);return article?json(article):json({error:'Article not found.'},404)}
   if(endpoint==='matches'){
@@ -57,6 +59,8 @@ export async function POST(request:NextRequest,{params}:Ctx){
  try{
   if(endpoint==='auth/register')return json(await register(await body(request)),201);
   if(endpoint==='auth/login')return json(await login(await body(request)));
+  if(endpoint==='push/subscribe')return json(await subscribe(userFromRequest(request)!,await body(request),request.headers.get('user-agent')),201);
+  if(endpoint==='push/test')return json(await testPush(userFromRequest(request)!));
   if(path[0]==='me'&&path[1]==='favorites'&&path.length===3)
    return json(await modifyFavorite(userFromRequest(request)!,path[2],'POST'),201);
   if(path[0]==='polls'&&path.length===2){const input=await body(request);return json(await vote(path[1],userFromRequest(request)!,input?.vote_choice),201)}
@@ -83,6 +87,7 @@ export async function DELETE(request:NextRequest,{params}:Ctx){
  try{
   if(path[0]==='me'&&path[1]==='favorites'&&path.length===3)
    return json(await modifyFavorite(userFromRequest(request)!,path[2],'DELETE'));
+  if(endpoint==='push/subscribe')return json(await unsubscribe(userFromRequest(request)!,await body(request)));
   return json({error:'This delete route has not been migrated.',code:'MIGRATION_INCOMPLETE'},501);
  }catch(error){return fail(error)}
 }
