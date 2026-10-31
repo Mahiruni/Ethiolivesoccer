@@ -39,6 +39,10 @@ jobs:
           grep -q "EthioLiveScores" /tmp/ethiolive-home.html
           curl -fsS http://127.0.0.1:3000/league/la-liga > /tmp/ethiolive-league.html
           grep -q "La Liga" /tmp/ethiolive-league.html
+          # Auth must fail safely when preview has no DB/JWT secrets.
+          auth_status="$(curl -s -o /tmp/ethiolive-auth.json -w '%{http_code}' -H 'Content-Type: application/json' -d '{"email":"sample@example.com","password":"examplepassword"}' http://127.0.0.1:3000/api/auth/login)"
+          [ "$auth_status" = "503" ]
+          node -e 'const x=require("/tmp/ethiolive-auth.json");if(x.code!=="AUTH_NOT_CONFIGURED")process.exit(1)'
           echo "Next.js migration preview HTTP smoke passed"
       - name: Install Chromium for responsive browser tests
         run: npx playwright install --with-deps chromium
