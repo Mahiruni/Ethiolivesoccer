@@ -68,3 +68,17 @@ test('official competition logos are looked up by stable league ID',()=>{
  assert.match(api,/lookupleague\.php\?id=/);
  assert.match(api,/providerIdentity\('league'/);
 });
+
+test('no national flags are shown in league selection or match detail',()=>{
+ const dashboard=read('components/Matchday.tsx');
+ const detail=read('app/match/[id]/page.tsx');
+ assert.doesNotMatch(dashboard,/<CountryFlag/);
+ assert.doesNotMatch(detail,/<CountryFlag/);
+});
+test('authentic club and league artwork has no badge tile background',()=>{
+ const css=read('app/globals.css');
+ assert.match(css,/Authentic team and competition marks: transparent/);
+ assert.match(css,/\.football-logo-approved,/);
+ assert.match(css,/background:transparent!important/);
+ assert.match(css,/border:0!important/);
+});
