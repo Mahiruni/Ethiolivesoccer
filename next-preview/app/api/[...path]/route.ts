@@ -4,7 +4,7 @@ import {AuthError,userFromRequest,profile,register,login,updateAccount,favoriteT
 import {poll,vote,chat,postChat,predictions} from '@/lib/community';
 import {stories,storyBySlug} from '@/lib/news';
 import {publicPushConfig,subscribe,unsubscribe,testPush} from '@/lib/push';
-import {approvedById,approvalCoverage} from '@/lib/sports-identity';
+import {approvedById,approvalCoverage,providerIdentity} from '@/lib/sports-identity';
 
 export const runtime='nodejs';
 export const dynamic='force-dynamic';
@@ -32,7 +32,21 @@ export async function GET(request:NextRequest,{params}:Ctx){
     source:'https://www.thesportsdb.com/',season:season(),
     leagues:LEAGUES,notice:'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
   });
-  if(endpoint==='competitions')return json(LEAGUES.map(l=>({...l,logo:approvedById('league',l.id,l.name).imageUrl})));
+  if(endpoint==='competitions'){
+   const data=await Promise.all(LEAGUES.map(async l=>{
+    let logo=approvedById('league',l.id,l.name).imageUrl;
+    if(!logo)try{
+     const response=await fetch('https://www.thesportsdb.com/api/v1/json/123/lookupleague.php?id='+l.id,{next:{revalidate:86400},signal:AbortSignal.timeout(7000)});
+     if(response.ok){
+      const result=await response.json() as {leagues?:Record<string,unknown>[]};
+      const league=result.leagues?.find(x=>String(x.idLeague)===String(l.id));
+      logo=providerIdentity('league',l.id,league?.strBadge,l.name).imageUrl;
+     }
+    }catch{}
+    return {...l,logo};
+   }));
+   return json(data);
+  }
   if(endpoint==='assets/coverage')return json({...approvalCoverage(),source:'reviewed-asset-registry',unreviewedArtworkPublished:false});
   if(endpoint==='push/config')return json(publicPushConfig());
   if(endpoint==='news')return json(await stories());
