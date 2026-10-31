@@ -10,10 +10,10 @@ type Props={
 export default function FootballLogo({name,src,className='',size=36,priority=false,kind='team'}:Props){
   const [broken,setBroken]=useState(false);
   const initials=name.split(/\s+/).filter(Boolean).slice(0,2).map(x=>x[0]).join('').toUpperCase();
-  return <span className={`football-logo ${className} ${src&&!broken?'football-logo-approved':''}`} style={{width:size,height:size,minWidth:size}} title={name}>
+  return <span className={`football-logo ${className} ${src&&!broken?'football-logo-approved':''}`} style={{width:size,height:size,minWidth:size,background:'transparent',border:'none',boxShadow:'none'}} title={name}>
     {src&&!broken?<Image src={src} alt={kind==='league'?name+' competition logo':name+' club crest'}
-      width={size} height={size} unoptimized priority={priority} sizes={size+'px'}
-      style={{width:'100%',height:'100%',objectFit:'contain'}}
+      width={size} height={size} priority={priority} loading={priority?'eager':'lazy'} quality={80} sizes={size+'px'}
+      style={{width:'100%',height:'100%',objectFit:'contain',background:'transparent'}}
       onError={()=>setBroken(true)}/>:
       <span aria-label={name+' official badge unavailable'} className="football-logo-fallback">{initials||'⚽'}</span>}
   </span>;

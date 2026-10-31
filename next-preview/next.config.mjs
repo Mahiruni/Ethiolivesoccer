@@ -2,7 +2,7 @@
 const config = {
   reactStrictMode:true,
   poweredByHeader:false,
-  images:{remotePatterns:[
+  images:{formats:['image/avif','image/webp'],minimumCacheTTL:86400,remotePatterns:[
     {protocol:'https',hostname:'www.thesportsdb.com',pathname:'/images/media/**'},
     {protocol:'https',hostname:'r2.thesportsdb.com',pathname:'/images/media/**'}
   ]},
