@@ -193,3 +193,26 @@ html,body{overflow-x:clip}
 @media(prefers-reduced-motion:reduce){
  .matchday-page>.hero,.match-detail-hero,.account-intro,.matchday-page>.section-label,.matchday-page>.league-pills,.matchday-grid,.detail-lower-grid{animation:none!important}
 }
+
+/* Licensed identity assets: retain exact artwork colors, dimensions and proportions. */
+.football-logo{position:relative;display:inline-grid;place-items:center;overflow:hidden;flex-shrink:0;
+ border:1px solid #3c5965;border-radius:10px;background:#243e49;color:#c9e5ef;vertical-align:middle}
+.football-logo-approved{background:rgba(255,255,255,.94);padding:3px;border-color:rgba(194,218,222,.6)}
+.football-logo-fallback{display:grid;place-items:center;width:100%;height:100%;
+ font-family:var(--font-display);font-size:clamp(8px,1vw,12px);font-weight:850;letter-spacing:-.04em;color:#d1e9f6}
+.football-country-flag{display:inline-flex;align-items:center;justify-content:center;font-size:22px;line-height:1;flex-shrink:0}
+.league-identity{display:inline-flex;align-items:center;gap:4px;flex-shrink:0}
+.league-identity .football-country-flag{font-size:17px}
+.league-pill .league-identity{margin-right:2px}
+.fixture-logo.football-logo{border-radius:8px}
+.table-logo.football-logo{border-radius:8px}
+.detail-logo.football-logo{border-radius:18px;border-color:#779585;background:#284b40}
+.detail-logo.football-logo-approved{background:#fff}
+.detail-logo .football-logo-fallback{font-size:19px}
+.match-detail-hero .eyebrow .football-country-flag{font-size:17px}
+.table-league-emblem .football-country-flag{font-size:23px}
+@media(max-width:700px){
+ .league-identity .football-country-flag{font-size:16px}
+ .detail-logo.football-logo{width:48px!important;height:48px!important;min-width:48px!important;border-radius:13px}
+ .detail-logo .football-logo-fallback{font-size:15px}
+}
