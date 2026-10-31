@@ -1,0 +1,1 @@
+export default function Loading(){return <main className="page wrap skeleton-screen" aria-busy="true"><div className="skeleton hero-skeleton"/><div className="skeleton section-skeleton"/><div className="skeleton section-skeleton"/></main>}
