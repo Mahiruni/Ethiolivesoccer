@@ -292,3 +292,31 @@ body{background:#101010;color:#f5f5f2}
 .fixture-row:hover,.table-item:hover{background:#282828}
 .football-logo,.football-logo-approved{background:transparent!important;border:0!important;box-shadow:none!important}
 @media(max-width:700px){.spotlight{border-radius:9px}.league-pill,.table-surface,.fixture-shell,.account-panel,.story-card{border-radius:9px}}
+
+/* FETAN — Global Sports Broadcast 02. Centralized final brand override. */
+:root{color-scheme:dark;--bg:#08090b;--surface:#20232a;--raised:#292d35;--line:#363a42;--text:#ffffff;--muted:#afb4bf;--lime:#ff453a;--ice:#ffffff;--coral:#ff453a}
+html,body{background:#08090b;color:#fff}
+body{background:#08090b}
+.site-header{background:#08090bf5;border-bottom:1px solid #34373d;box-shadow:none}
+.site-ribbon{background:#15171b;border-color:#34373d}
+.site-footer{background:#08090b;border-color:#34373d}
+.wordmark-icon{background:#ff453a;color:#fff;border-radius:4px;box-shadow:none}
+.wordmark-copy strong{letter-spacing:-.065em;font-weight:900}
+.wordmark-copy strong span{color:#ff453a}
+.header-nav a:hover,.header-nav a.active{background:#292d35;color:#fff;border-bottom:2px solid #ff453a}
+.preview-pill{background:#1f2228;border:1px solid #383c45;color:#fff}
+.menu-toggle{background:#20232a;border-color:#444a52}
+.league-pill,.fixture-shell,.table-surface,.fan-card,.account-panel,.account-aside,.community-surface,.news-hero,.story-card,.article-surface,.notification-panel,.match-detail-hero{background:#20232a;border-color:#363a42;box-shadow:none}
+.league-pill:hover,.league-pill.selected{background:#2a2e36;border-color:#ff453a}
+.coverage-notice{background:#20232a;border-color:#363a42}
+.spotlight{background:linear-gradient(125deg,#08090b 0%,#20232a 55%,#101116 100%);border:1px solid #383b44;border-radius:7px;box-shadow:none}
+.spotlight:before{opacity:.11}
+.spotlight-eyebrow{color:#ff453a}
+.spotlight-score b{color:#fff}
+.spotlight-controls>button{background:#20232a;border-color:#555a64}
+.spotlight-dots button{background:#616773}
+.spotlight-dots button.active{background:#ff453a}
+.spotlight-foot>a,.account-submit,.action-primary{background:#ff453a;color:#fff}
+.fixture-row:hover,.table-item:hover{background:#292d35}
+.football-logo,.football-logo-approved{background:transparent!important;border:0!important;box-shadow:none!important}
+@media(max-width:700px){.spotlight{border-radius:5px}.league-pill,.table-surface,.fixture-shell,.account-panel,.story-card{border-radius:6px}}
