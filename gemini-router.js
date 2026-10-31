@@ -11,6 +11,9 @@ const TIMEZONE = 'Africa/Addis_Ababa';
 const CURRENT_TTL_MS = 90 * 1000;
 const HISTORIC_TTL_MS = 10 * 60 * 1000;
 const feedCache = new Map();
+const pendingFeeds = new Map();
+let lastSuccessfulFetchAt = null;
+let lastProviderError = null;
 
 const norm = value => String(value || '').trim().toLowerCase().replace(/[^a-z0-9]+/g, ' ').trim();
 const slugify = value => String(value || '').toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '').slice(0, 90) || 'football';
@@ -27,7 +30,10 @@ function addisDate(date = new Date()) {
 }
 
 function validDate(value) {
-  return /^\d{4}-\d{2}-\d{2}$/.test(String(value || '')) ? String(value) : addisDate();
+  const text = String(value || '');
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(text)) return addisDate();
+  const date = new Date(`${text}T12:00:00Z`);
+  return Number.isNaN(date.getTime()) || date.toISOString().slice(0, 10) !== text ? addisDate() : text;
 }
 
 function canonicalCompetitionSlug(name = '', provided = '') {
@@ -68,8 +74,9 @@ function statusCode(value = '') {
 }
 
 function scoreNumber(value) {
+  if (value === null || value === undefined || value === '') return null;
   const n = Number(value);
-  return Number.isFinite(n) ? n : 0;
+  return Number.isInteger(n) && n >= 0 ? n : null;
 }
 
 function normalizeMatch(raw = {}, targetDate) {
@@ -78,7 +85,8 @@ function normalizeMatch(raw = {}, targetDate) {
   const away = raw.away_team || raw.away || '';
   if (!home || !away) return null;
   const slug = canonicalCompetitionSlug(competition, raw.competition_slug);
-  const kickoff = raw.kickoff_iso || raw.kickoff || raw.match_date || `${targetDate}T12:00:00+03:00`;
+  const kickoff = raw.kickoff_iso || raw.kickoff || raw.match_date;
+  if (!kickoff || Number.isNaN(Date.parse(kickoff))) return null; // Never invent fixture kickoff times.
   const id = `g-${sha(`${targetDate}|${slug}|${home}|${away}|${kickoff}`)}`;
   const status = statusCode(raw.status);
   return {
@@ -338,21 +346,28 @@ async function getFeed(date) {
   const ttl = targetDate === addisDate() ? CURRENT_TTL_MS : HISTORIC_TTL_MS;
   const cached = feedCache.get(targetDate);
   if (cached && Date.now() - cached.at < ttl) return cached.value;
-
-  const models = [...new Set([GEMINI_MODEL, ...FALLBACK_MODELS])];
-  let lastError;
-  for (const model of models) {
-    try {
-      const value = await requestModel(model, targetDate);
-      feedCache.set(targetDate, { at: Date.now(), value });
-      return value;
-    } catch (error) {
-      lastError = error;
-      if (Number(error.providerStatus) === 429) break;
-      if (![404, 500, 502, 503, 504].includes(Number(error.providerStatus || error.status))) break;
+  if (pendingFeeds.has(targetDate)) return pendingFeeds.get(targetDate);
+  const job = (async () => {
+    const models = [...new Set([GEMINI_MODEL, ...FALLBACK_MODELS])];
+    let lastError;
+    for (const model of models) {
+      try {
+        const value = await requestModel(model, targetDate);
+        feedCache.set(targetDate, { at: Date.now(), value });
+        lastSuccessfulFetchAt = nowIso();
+        lastProviderError = null;
+        return value;
+      } catch (error) {
+        lastError = error;
+        if (Number(error.providerStatus) === 429) break;
+        if (![404, 500, 502, 503, 504].includes(Number(error.providerStatus || error.status))) break;
+      }
     }
-  }
-  throw lastError || new Error('Unable to load Gemini football data.');
+    lastProviderError = { at: nowIso(), status: lastError?.providerStatus || lastError?.status || 502 };
+    throw lastError || new Error('Unable to load Gemini football data.');
+  })();
+  pendingFeeds.set(targetDate, job);
+  try { return await job; } finally { pendingFeeds.delete(targetDate); }
 }
 
 function sendError(res, error) {
@@ -372,7 +387,7 @@ router.get('/gemini/status', (req, res) => {
 
 router.get('/provider/status', (req, res) => {
   res.set('Cache-Control', 'no-store');
-  res.json({ configured: Boolean(GEMINI_API_KEY), healthy: Boolean(GEMINI_API_KEY), provider: 'Google Gemini', mode: 'Google Search grounding', footballDataSource: 'Gemini only', timezone: TIMEZONE });
+  res.json({ configured: Boolean(GEMINI_API_KEY), healthy: lastSuccessfulFetchAt ? !lastProviderError : null, lastSuccessfulFetchAt, lastProviderError, provider: 'Google Gemini', mode: 'Google Search grounding', footballDataSource: 'Gemini only', authoritativeSportsFeed: false, timezone: TIMEZONE });
 });
 
 router.get('/live-update', async (req, res) => {
