@@ -84,9 +84,9 @@ export default function MatchCenter({onNeedAuth}){
     const id=setInterval(()=>{
       if(document.visibilityState!=='visible'||Date.now()-activityRef.current<1800)return;
       loadData(true,true);
-    },provider?.configured?60000:120000);
+    },provider?.realtime===false?15*60*1000:provider?.configured?60000:120000);
     return()=>clearInterval(id);
-  },[selectedDate,selectedLeague,provider?.configured]);
+  },[selectedDate,selectedLeague,provider?.configured,provider?.realtime]);
 
   const loadChat=async()=>{const m=matches.find(x=>String(x.id)===String(selected));const local=m?.local_match_id||null;if(!local){setChat([]);return;}try{setChat(await apiFetch(`/chat/${local}`)||[])}catch{setChat([])}};
   const loadPoll=async()=>{const m=matches.find(x=>String(x.id)===String(selected));const local=m?.local_match_id||null;if(!local){setPoll(null);return;}try{setPoll(await apiFetch(`/polls/${local}`))}catch{setPoll(null)}};
@@ -113,7 +113,7 @@ export default function MatchCenter({onNeedAuth}){
 
     <div className="league-switcher" role="group" aria-label="Choose international competition">{internationalLeagues.map(item=><button type="button" key={item.slug} aria-pressed={selectedLeague===item.slug} className={selectedLeague===item.slug?'active':''} onClick={()=>{haptic();setSelectedLeague(item.slug);setFilter('all');setSelected(null);}}>{item.label}</button>)}</div>
     <p className="free-feed-note">Free data: up to 3 fixtures per day and 5 standings rows per league. Scores may be delayed; not an official real-time feed. <a href="https://www.thesportsdb.com/" target="_blank" rel="noopener noreferrer">Source: TheSportsDB</a></p>
-    <div className="matchday-quick-actions"><span className="matchday-tz">All times in Addis Ababa (EAT)</span>{lastUpdated&&<span className="matchday-updated">Updated {new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Addis_Ababa'}).format(lastUpdated)}</span>}<button type="button" className="matchday-today" onClick={()=>{haptic();setSelectedDate(isoDate(new Date()));setFilter('all')}} disabled={selectedDate===todayKey}>Today</button></div>
+    <div className="matchday-quick-actions"><span className="matchday-tz">All times in Addis Ababa (EAT)</span>{lastUpdated&&<span className="matchday-updated">Checked {new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Addis_Ababa'}).format(lastUpdated)}</span>}<button type="button" className="matchday-today" onClick={()=>{haptic();setSelectedDate(isoDate(new Date()));setFilter('all')}} disabled={selectedDate===todayKey}>Today</button></div>
     <div className="mobile-score-controls">
       <div className="swipe-hint"><span>‹</span><b>Swipe left or right</b><span>to change match day ›</span></div>
       <div className="date-strip"><button className="date-card calendar" onClick={()=>{haptic();calendarRef.current?.showPicker?.()}}><CalendarDays size={18}/><input ref={calendarRef} type="date" value={selectedDate} onChange={e=>e.target.value&&setSelectedDate(e.target.value)} aria-label="Choose match date"/></button>{dates.map(({d,date})=><button key={date} className={`date-card ${selectedDate===date?'active':''}`} onClick={()=>{haptic();setSelectedDate(date)}}><small>{date===todayKey?'TODAY':d.toLocaleDateString('en',{weekday:'short',timeZone:'UTC'}).toUpperCase()}</small><b>{d.getUTCDate()}</b></button>)}</div>
