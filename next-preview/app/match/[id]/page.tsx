@@ -2,6 +2,8 @@ import type { Metadata } from 'next';
 import Link from 'next/link';
 import {notFound} from 'next/navigation';
 import {fixtureById,FeedError} from '@/lib/football';
+import {localMatchId} from '@/lib/community';
+import MatchCommunity from '@/components/MatchCommunity';
 export const dynamic='force-dynamic';
 export async function generateMetadata({params}:{params:Promise<{id:string}>}):Promise<Metadata>{
  const {id}=await params;try{const match=await fixtureById(id);return {title:match.home+' vs '+match.away,description:match.league+' reported fixture, score and kickoff details.'}}
@@ -11,6 +13,7 @@ export default async function MatchPage({params}:{params:Promise<{id:string}>}){
  const {id}=await params;
  let match;
  try{match=await fixtureById(id)}catch(e){if(e instanceof FeedError&&e.status===404)notFound();throw e}
+ const localId=await localMatchId(id);
  const scored=match.homeScore!==null&&match.awayScore!==null;
  const date=match.date?new Intl.DateTimeFormat('en-GB',{dateStyle:'full',timeStyle:'short',timeZone:'Africa/Addis_Ababa'}).format(new Date(match.date)):'Kickoff time not verified';
  return <main className="wrap match-detail-layout">
@@ -30,5 +33,6 @@ export default async function MatchPage({params}:{params:Promise<{id:string}>}){
     <article className="surface"><span className="eyebrow">MATCH INFORMATION</span><h2>Fixture overview</h2><dl className="detail-list"><div><dt>Competition</dt><dd>{match.league}</dd></div><div><dt>Venue</dt><dd>{match.venue||'Not reported'}</dd></div><div><dt>Kickoff</dt><dd>{date}</dd></div><div><dt>Data source</dt><dd>TheSportsDB free feed</dd></div></dl></article>
     <aside className="surface"><span className="eyebrow">MATCH COVERAGE</span><h2>Verified data only</h2><p className="muted">Event timelines, lineups and detailed statistics are not provided by the current free source. We never fill gaps with invented information.</p><Link href={'/league/'+match.leagueSlug} className="action-primary">Explore {match.league} →</Link></aside>
   </section>
+  <MatchCommunity localId={localId} home={match.home} away={match.away}/>
  </main>
 }
