@@ -101,11 +101,11 @@ export default function MatchCenter({onNeedAuth}){
   const vote=async choice=>{if(!auth.user){onNeedAuth();return;}if(!localSelected)return;haptic();setVoteBusy(true);try{await apiFetch(`/polls/${localSelected}`,{method:'POST',body:JSON.stringify({vote_choice:choice})});await loadPoll();await auth.loadPredictions?.()}finally{setVoteBusy(false)}};
   const send=async()=>{if(!message.trim())return;if(!auth.user){onNeedAuth();return;}if(!localSelected)return;try{await apiFetch(`/chat/${localSelected}`,{method:'POST',body:JSON.stringify({message_text:message.trim()})});haptic();setMessage('');loadChat()}catch{}};
 
-  const shiftDate=days=>{const d=new Date(`${selectedDate}T12:00:00`);d.setDate(d.getDate()+days);haptic();setFilter('all');setSelectedDate(isoDate(d));};
-  const onTouchStart=e=>{activityRef.current=Date.now();const t=e.touches?.[0];if(t)touchRef.current={x:t.clientX,y:t.clientY}};
+  const shiftDate=days=>{const d=new Date(`${selectedDate}T12:00:00Z`);d.setUTCDate(d.getUTCDate()+days);haptic();setFilter('all');setSelectedDate(isoDate(d));};
+  const onTouchStart=e=>{activityRef.current=Date.now();if(e.target?.closest?.('.league-switcher,.date-strip,.filters,.competition-scroll,.news-filters,.competition-filter-scroll')){touchRef.current=null;return;}const t=e.touches?.[0];if(t)touchRef.current={x:t.clientX,y:t.clientY}};
   const onTouchEnd=e=>{activityRef.current=Date.now();const start=touchRef.current,t=e.changedTouches?.[0];touchRef.current=null;if(!start||!t)return;const dx=t.clientX-start.x,dy=t.clientY-start.y;if(Math.abs(dx)>58&&Math.abs(dx)>Math.abs(dy)*1.35)shiftDate(dx<0?1:-1)};
-  const center=new Date(`${selectedDate}T12:00:00`),todayKey=isoDate(new Date());
-  const dates=[-2,-1,0,1,2].map(offset=>{const d=new Date(center);d.setDate(d.getDate()+offset);return{offset,d,date:isoDate(d)}});
+  const center=new Date(`${selectedDate}T12:00:00Z`),todayKey=isoDate(new Date());
+  const dates=[-2,-1,0,1,2].map(offset=>{const d=new Date(center);d.setUTCDate(d.getUTCDate()+offset);return{offset,d,date:isoDate(d)}});
   const total=(poll?.home_votes||0)+(poll?.draw_votes||0)+(poll?.away_votes||0),pct=n=>total?Math.round(n*100/total):0;
 
   return <main className="page score-swipe-surface" id="scores" onTouchStart={onTouchStart} onTouchEnd={onTouchEnd}>
@@ -116,7 +116,7 @@ export default function MatchCenter({onNeedAuth}){
     <div className="matchday-quick-actions"><span className="matchday-tz">All times in Addis Ababa (EAT)</span>{lastUpdated&&<span className="matchday-updated">Updated {new Intl.DateTimeFormat('en-GB',{hour:'2-digit',minute:'2-digit',timeZone:'Africa/Addis_Ababa'}).format(lastUpdated)}</span>}<button type="button" className="matchday-today" onClick={()=>{haptic();setSelectedDate(isoDate(new Date()));setFilter('all')}} disabled={selectedDate===todayKey}>Today</button></div>
     <div className="mobile-score-controls">
       <div className="swipe-hint"><span>‹</span><b>Swipe left or right</b><span>to change match day ›</span></div>
-      <div className="date-strip"><button className="date-card calendar" onClick={()=>{haptic();calendarRef.current?.showPicker?.()}}><CalendarDays size={18}/><input ref={calendarRef} type="date" value={selectedDate} onChange={e=>e.target.value&&setSelectedDate(e.target.value)} aria-label="Choose match date"/></button>{dates.map(({d,date})=><button key={date} className={`date-card ${selectedDate===date?'active':''}`} onClick={()=>{haptic();setSelectedDate(date)}}><small>{date===todayKey?'TODAY':d.toLocaleDateString('en',{weekday:'short'}).toUpperCase()}</small><b>{d.getDate()}</b></button>)}</div>
+      <div className="date-strip"><button className="date-card calendar" onClick={()=>{haptic();calendarRef.current?.showPicker?.()}}><CalendarDays size={18}/><input ref={calendarRef} type="date" value={selectedDate} onChange={e=>e.target.value&&setSelectedDate(e.target.value)} aria-label="Choose match date"/></button>{dates.map(({d,date})=><button key={date} className={`date-card ${selectedDate===date?'active':''}`} onClick={()=>{haptic();setSelectedDate(date)}}><small>{date===todayKey?'TODAY':d.toLocaleDateString('en',{weekday:'short',timeZone:'UTC'}).toUpperCase()}</small><b>{d.getUTCDate()}</b></button>)}</div>
       <div className="filters">{['all','live','upcoming','finished'].map(x=><button key={x} className={filter===x?'active':''} onClick={()=>{haptic();setFilter(x)}}>{x[0].toUpperCase()+x.slice(1)}</button>)}</div>
     </div>
 
