@@ -1,6 +1,5 @@
 'use client';
 import Link from 'next/link';
-import {useRouter} from 'next/navigation';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowUpRight,CalendarDays,ChevronLeft,ChevronRight,Clock3,RefreshCw,Radio,Info,Trophy,Activity,ShieldCheck,TriangleAlert} from 'lucide-react';
 import type {Fixture,Standing} from '@/lib/football';
@@ -48,12 +47,12 @@ function MatchRow({match}:{match:Fixture}){
  </Link>;
 }
 export default function Matchday({initialLeague='premier-league'}:{initialLeague?:string}){
- const router=useRouter();
  const [league,setLeague]=useState(LEAGUES.some(l=>l.slug===initialLeague)?initialLeague:LEAGUES[0].slug);
  const [date,setDate]=useState<string|null>(null);
  const [filter,setFilter]=useState<'all'|'live'|'upcoming'|'results'>('all');
  const [state,setState]=useState<ViewState>({fixtures:[],standings:[],loading:true,error:null,tableError:null,lastChecked:null});
  const requestId=useRef(0);
+ const [nonce,setNonce]=useState(0);
  const initial=useRef(true);
  const selected=LEAGUES.find(l=>l.slug===league)||LEAGUES[0];
  useEffect(()=>{setDate(dateKey(new Date()))},[]);
@@ -83,7 +82,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
   load();
   const poll=window.setInterval(()=>{if(document.visibilityState==='visible')load()},15*60*1000);
   return()=>{requestId.current++;controller.abort();window.clearInterval(poll)};
- },[league,date]);
+ },[league,date,nonce]);
  const filtered=useMemo(()=>state.fixtures.filter(m=>{
   if(filter==='live')return m.status==='LIVE';
   if(filter==='results')return m.status==='FT'||m.status==='SCORED';
@@ -96,9 +95,6 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
  const today=dateKey(new Date());
  const changeLeague=(next:string)=>{if(league===next)return;setLeague(next);setFilter('all')};
  const changeDate=(next:string)=>{setDate(next);setFilter('all')};
- const [nonce,setNonce]=useState(0);
- useEffect(()=>{if(nonce)setState(p=>({...p,loading:true}))},[nonce]);
- const refresh=()=>{setNonce(n=>n+1);changeDate(selectedDate)}; // Real refresh handled below through a nonce dependency.
  return <main className="wrap page matchday-page">
   <section className="hero">
    <div className="hero-copy"><div className="eyebrow"><span className="signal-dot"/> EUROPEAN FOOTBALL · 2026/27</div><h1>Every match.<br/><span>One obsession.</span></h1><p>Follow the biggest leagues in the world with a matchday experience built for speed, clarity and the beautiful game.</p>
