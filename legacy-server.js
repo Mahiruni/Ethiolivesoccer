@@ -64,6 +64,76 @@ function effectiveProviderTtl(endpoint, requested) {
   if (endpoint === 'standings') return Math.max(requested, 6 * 60 * 60 * 1000);
   return Math.max(requested, quotaSafeCacheMs);
 }
+let providerAccountCache = null;
+let providerAccountPending = null;
+// API-Football's /status endpoint does not count towards the daily request quota.
+async function providerAccountStatus() {
+  if (!providerEnabled) return null;
+  if (providerAccountCache && Date.now() - providerAccountCache.at < 15 * 60 * 1000) {
+    return providerAccountCache.value;
+  }
+  if (providerAccountPending) return providerAccountPending;
+  providerAccountPending = (async () => {
+    const response = await fetch(`${FOOTBALL_API_BASE.replace(/\/$/, '')}/status`, {
+      headers: { 'x-apisports-key': FOOTBALL_API_KEY },
+      signal: AbortSignal.timeout(8000)
+    });
+    const payload = await response.json().catch(() => null);
+    if (!response.ok || !payload?.response?.subscription) {
+      throw Object.assign(new Error('API-Football account status is unavailable.'), { status: 502 });
+    }
+    const subscription = payload.response.subscription;
+    const requests = payload.response.requests || {};
+    const result = {
+      plan: String(subscription.plan || 'Unknown'),
+      active: subscription.active === true,
+      used: Number.isFinite(Number(requests.current)) ? Number(requests.current) : null,
+      dailyLimit: Number.isFinite(Number(requests.limit_day)) ? Number(requests.limit_day) : null
+    };
+    providerAccountCache = { at: Date.now(), value: result };
+    return result;
+  })();
+  try { return await providerAccountPending; }
+  finally { providerAccountPending = null; }
+}
+function freeSeasonAccess(account, season) {
+  if (!account || !/^free$/i.test(account.plan) || !Number.isFinite(Number(season))) return null;
+  // API-Football Free in 2026: seasons 2022, 2023, 2024 (Year-4 through Year-2).
+  const currentYear = new Date().getUTCFullYear();
+  const year = Number(season);
+  return year >= currentYear - 4 && year <= currentYear - 2;
+}
+function providerPlanError(season) {
+  return Object.assign(new Error(
+    `API-Football's Free plan cannot retrieve fixtures or standings for season ${season}. The current season requires an eligible plan.`
+  ), {
+    status: 403,
+    code: 'PROVIDER_SEASON_RESTRICTED',
+    action: 'Check the permitted seasons in the API-Football dashboard or upgrade to a plan that includes the current season.'
+  });
+}
+function classifyProviderError(errors, httpStatus = 200) {
+  const parts = Array.isArray(errors) ? errors :
+    errors && typeof errors === 'object' ? Object.values(errors) : [errors];
+  const details = parts.map(x => String(x || '')).join(' ').toLowerCase();
+  if (/free|subscription|plan|upgrade|season.*(?:access|available)|(?:access|available).*season/.test(details)) {
+    return Object.assign(new Error('The current API-Football subscription does not permit this request.'), {
+      status: 403, code: 'PROVIDER_PLAN_RESTRICTED',
+      action: 'Review the API-Football plan and available seasons in the provider dashboard.'
+    });
+  }
+  if (httpStatus === 429 || /quota|rate.limit|requests?.*limit|daily.*limit|too many/.test(details)) {
+    return Object.assign(new Error('The football-data request quota has been reached.'), {
+      status: 429, code: 'PROVIDER_QUOTA_EXCEEDED',
+      action: 'Wait for the provider quota to reset or increase the plan limits.'
+    });
+  }
+  return Object.assign(new Error('API-Football rejected the fixture-data request.'), {
+    status: httpStatus >= 500 ? 502 : httpStatus >= 400 ? httpStatus : 502,
+    code: 'PROVIDER_REQUEST_REJECTED',
+    action: 'Check the request parameters, subscription permissions and API-Football dashboard.'
+  });
+}
 function cacheGet(key,maxAgeMs){const hit=providerCache.get(key);if(!hit||Date.now()-hit.at>maxAgeMs){providerCache.delete(key);return null;}return hit.value;}
 function cacheSet(key,value){providerCache.set(key,{at:Date.now(),value});return value;}
 async function footballApi(endpoint,params={},requestedTtl=15000){
@@ -88,17 +158,26 @@ async function footballApi(endpoint,params={},requestedTtl=15000){
         console.warn('Football cache read skipped:',error.message);
       }
     }
+    // Validate Free-plan season access before spending a metered API call.
+    // If /status is transiently unavailable, defer to the upstream response.
+    if (params.season != null && endpoint !== 'leagues') {
+      const account = await providerAccountStatus().catch(() => null);
+      if (freeSeasonAccess(account, params.season) === false) {
+        throw providerPlanError(params.season);
+      }
+    }
     const response=await fetch(`${FOOTBALL_API_BASE.replace(/\/$/,'')}/${endpoint}?${qs}`,{
-      headers:{'x-apisports-key':FOOTBALL_API_KEY,'accept':'application/json'},
+      // The API-Football specification lists only x-apisports-key as a
+      // supported custom header for this GET endpoint.
+      headers:{'x-apisports-key':FOOTBALL_API_KEY},
       signal:AbortSignal.timeout(12000)
     });
     const data=await response.json().catch(()=>null);
-    if(!response.ok)throw Object.assign(
-      new Error(response.status===429?'Football data rate limit reached. Try again later.':`Football provider request failed (${response.status}).`),
-      {status:response.status===429?429:502}
-    );
-    const errors=data?.errors&&Object.keys(data.errors).length?data.errors:null;
-    if(errors)throw Object.assign(new Error('Football data provider returned an error.'),{status:502});
+    const errors=data?.errors && (
+      typeof data.errors === 'string' ? data.errors.length > 0 :
+      Object.keys(data.errors).length > 0
+    ) ? data.errors : null;
+    if(!response.ok || errors) throw classifyProviderError(errors, response.status);
     const value=data?.response??[];
     if(db) {
       try {
@@ -160,7 +239,19 @@ async function persistProviderFixtures(db,fixtures){
 }
 
 app.get('/api/health',asyncRoute(async(req,res)=>{const db=getPool();let database='not-configured';if(db){try{await db.query('SELECT 1');database='connected';}catch(error){database='unavailable';console.error('Health database check failed:',error.message);}}const ready=database==='connected'&&authConfigured;res.status(ready?200:503).set('Cache-Control','no-store').json({ok:ready,service:'EthioLiveScores API',database,authentication:authConfigured?'configured':'not-configured',footballProvider:process.env.GEMINI_API_KEY?'gemini-configured-unverified':providerEnabled?'api-football-configured-unverified':'not-configured',push:pushEnabled?'configured':'not-configured'});}));
-app.get('/api/provider/status',asyncRoute(async(req,res)=>{if(!providerEnabled)return res.json({configured:false,provider:'API-Football',action:'Add API_FOOTBALL_KEY to Vercel environment variables.'});try{const league=await resolveProviderLeague();res.json({configured:true,provider:'API-Football',country:FOOTBALL_COUNTRY,league});}catch(error){res.status(error.status||502).json({configured:true,provider:'API-Football',error:error.message});}}));
+app.get('/api/provider/status',asyncRoute(async(req,res)=>{if(!providerEnabled)return res.json({configured:false,provider:'API-Football',action:'Add API_FOOTBALL_KEY to Vercel environment variables.'});try{
+  const [league,account]=await Promise.all([
+    resolveProviderLeague(),providerAccountStatus().catch(()=>null)
+  ]);
+  const access=freeSeasonAccess(account,league.season);
+  res.set('Cache-Control','no-store').json({
+    configured:true,provider:'API-Football',country:FOOTBALL_COUNTRY,league,
+    subscription:account?{plan:account.plan,active:account.active}:null,
+    dailyRequests:account?{used:account.used,limit:account.dailyLimit}:null,
+    currentSeasonAccessible:access,
+    action:access===false?'Free plan covers older seasons only. Select an eligible API-Football plan for live 2026 fixtures.':null
+  });
+}catch(error){res.status(error.status||502).json({configured:true,provider:'API-Football',error:error.message});}}));
 
 app.get('/api/matches',asyncRoute(async(req,res)=>{
   if(providerEnabled){
@@ -232,6 +323,10 @@ app.post('/api/internal/push/event',requireDatabase,asyncRoute(async(req,res)=>{
 
 const distDir=path.join(__dirname,'dist');if(fs.existsSync(distDir))app.use(express.static(distDir,{index:false,maxAge:'1h'}));
 app.use((req,res)=>{if(req.path.startsWith('/api/'))return res.status(404).json({error:'API route not found.'});const file=fs.existsSync(path.join(distDir,'index.html'))?path.join(distDir,'index.html'):path.join(__dirname,'index.html');return res.type('html').sendFile(file);});
-app.use((err,req,res,next)=>{console.error('EthioLiveScores request error:',err);if(res.headersSent)return next(err);res.status(err.status&&err.status>=400?err.status:500).json({error:err.message||'Internal server error.',detail:process.env.NODE_ENV==='production'?undefined:err.data||err.stack});});
+app.use((err,req,res,next)=>{console.error('EthioLiveScores request error:',err);if(res.headersSent)return next(err);res.status(err.status&&err.status>=400?err.status:500).json({
+  error:err.message||'Internal server error.',code:err.code||undefined,
+  action:err.action||undefined,
+  detail:process.env.NODE_ENV==='production'?undefined:err.data||err.stack
+});});
 if(require.main===module){const port=Number(process.env.PORT||5000);app.listen(port,()=>console.log(`EthioLiveScores API online on port ${port}`));}
 module.exports=app;
