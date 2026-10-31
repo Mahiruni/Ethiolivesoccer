@@ -4,6 +4,7 @@ import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowUpRight,CalendarDays,ChevronLeft,ChevronRight,Clock3,RefreshCw,Radio,Info,Trophy,Activity,ShieldCheck,TriangleAlert} from 'lucide-react';
 import type {Fixture,Standing} from '@/lib/football';
 import FootballLogo from './FootballLogo';
+import MatchSpotlight from './MatchSpotlight';
 
 type LeagueItem={slug:string;name:string;short:string;country:string;label:string;accent:string};
 const LEAGUES:LeagueItem[]=[
@@ -111,12 +112,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
  const changeLeague=(next:string)=>{if(league===next)return;setLeague(next);setFilter('all')};
  const changeDate=(next:string)=>{setDate(next);setFilter('all')};
  return <main className="wrap page matchday-page">
-  <section className="hero">
-   <div className="hero-copy"><div className="eyebrow"><span className="signal-dot"/> EUROPEAN FOOTBALL · 2026/27</div><h1>Every match.<br/><span>One obsession.</span></h1><p>Follow the biggest leagues in the world with a matchday experience built for speed, clarity and the beautiful game.</p>
-    <div className="hero-stats"><div><strong>{state.fixtures.length.toString().padStart(2,'0')}</strong><span>GAMES SHOWN</span></div><div><strong>{state.standings.length.toString().padStart(2,'0')}</strong><span>TABLE POSITIONS</span></div><div><strong>05</strong><span>TOP LEAGUES</span></div></div>
-   </div>
-   <div className="hero-art" aria-hidden="true"><div className="pitch-orbit orbit-one"/><div className="pitch-orbit orbit-two"/><div className="pitch-line"/><div className="hero-ball"><Activity size={68} strokeWidth={1.25}/></div><div className="floating-kicker"><Radio size={15}/> THE GLOBAL MATCHDAY</div></div>
-  </section>
+  <MatchSpotlight matches={state.fixtures} loading={state.loading}/>
   <div className="section-label"><div><span className="eyebrow">01 / THE LEAGUES</span><h2>Pick your competition</h2></div><div className="source-indicator"><ShieldCheck size={15}/> VERIFIED SOURCE · PARTIAL COVERAGE</div></div>
   <nav className="league-pills" aria-label="Choose competition">
    {LEAGUES.map(l=><button key={l.slug} type="button" className={'league-pill '+(league===l.slug?'selected':'')} onClick={()=>changeLeague(l.slug)} aria-pressed={league===l.slug}>
