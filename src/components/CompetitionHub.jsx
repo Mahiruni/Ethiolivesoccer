@@ -24,12 +24,12 @@ export default function CompetitionHub({lang='en',compact=false}){
     return inTier&&matches;
   }),[filter,query]);
 
-  if(compact)return <section className="home-section competition-rail"><div className="section-title-row"><div><span className="eyebrow">Competitions</span><h2>{lang==='am'?'ውድድሮችን ይከታተሉ':'Follow the top European leagues'}</h2></div><Link className="text-link" to="/competitions">View all <ArrowRight size={14}/></Link></div><div className="competition-scroll">{competitions.slice(0,7).map(i=><Card key={i.slug} item={i} lang={lang} compact/>)}</div></section>;
+  if(compact)return <section className="home-section competition-rail"><div className="section-title-row"><div><span className="eyebrow">Competitions</span><h2>{lang==='am'?'ውድድሮችን ይከታተሉ':'Choose your league'}</h2></div><Link className="text-link" to="/competitions">View all <ArrowRight size={14}/></Link></div><div className="competition-scroll">{competitions.slice(0,7).map(i=><Card key={i.slug} item={i} lang={lang} compact/>)}</div></section>;
 
   return <main className="page content-page competition-directory-page">
     <section className="content-hero competition-directory-hero">
       <div className="competition-hero-icon"><Trophy size={23}/></div>
-      <div><span className="eyebrow">Competition center</span><h1>{lang==='am'?'የእግር ኳስ ውድድሮች':'Football competitions'}</h1><p>{lang==='am'?'ከአውሮፓ ታላላቅ ሊጎች የጨዋታ መርሃ ግብር እና የደረጃ ሰንጠረዥ ይከታተሉ።':'Fixtures, reported scores and partial free standings for the Premier League, La Liga, Bundesliga, Serie A and Ligue 1.'}</p></div>
+      <div><span className="eyebrow">THE FIVE LEAGUES</span><h1>{lang==='am'?'የእግር ኳስ ውድድሮች':'Explore the leagues'}</h1><p>{lang==='am'?'ከአውሮፓ ታላላቅ ሊጎች የጨዋታ መርሃ ግብር እና የደረጃ ሰንጠረዥ ይከታተሉ።':'The biggest European leagues, one matchday destination. Browse fixtures, reported scores and top-five tables.'}</p></div>
       <div className="competition-count"><strong>{competitions.length}</strong><span>competitions</span></div>
     </section>
 
