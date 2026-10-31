@@ -1,14 +1,15 @@
 'use client';
 import Link from 'next/link';
 import {usePathname} from 'next/navigation';
-import {Activity,House,Trophy,Newspaper,UsersRound,ArrowUpRight,Menu,X} from 'lucide-react';
+import {Activity,House,Trophy,Newspaper,UsersRound,UserRound,ArrowUpRight,Menu,X} from 'lucide-react';
 import {useState} from 'react';
 
 const items=[
   {name:'Matchday',href:'/',Icon:House},
   {name:'Leagues',href:'/league/premier-league',Icon:Trophy},
   {name:'Stories',href:'/stories',Icon:Newspaper},
-  {name:'Fan zone',href:'/community',Icon:UsersRound}
+  {name:'Fan zone',href:'/community',Icon:UsersRound},
+  {name:'Account',href:'/account',Icon:UserRound}
 ];
 export default function SiteFrame({children}:{children:React.ReactNode}){
  const path=usePathname();
