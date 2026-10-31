@@ -11,7 +11,7 @@ const signingKey=process.env.JWT_SECRET || '';
 let pool:Pool|undefined;
 function getDb(){
   if(!process.env.DATABASE_URL)throw new AuthError(503,'DB_NOT_CONFIGURED','Account service is not configured in this preview.');
-  if(!pool)pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false},max:3,connectionTimeoutMillis:5000,idleTimeoutMillis:15000});
+  if(!pool)pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:true},max:3,connectionTimeoutMillis:5000,idleTimeoutMillis:15000});
   return pool;
 }
 export function accountDatabase(){return getDb()}
