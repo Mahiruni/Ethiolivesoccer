@@ -154,3 +154,7 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
  .bottom-nav a{min-width:0;flex:1 1 0;overflow:hidden}
  .bottom-nav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
 }
+
+/* Clip document-level subpixel scroll extents without disabling the scrollable
+   league rail, date carousel, or other explicitly scrollable components. */
+html,body{overflow-x:clip}
