@@ -202,7 +202,14 @@ function extractGroundingSources(payload) {
 function parseModelJson(text = '') {
   const cleaned = String(text).trim().replace(/^```(?:json)?\s*/i, '').replace(/\s*```$/i, '');
   if (!cleaned) throw new Error('Gemini returned an empty response.');
-  return JSON.parse(cleaned);
+  try { return JSON.parse(cleaned); }
+  catch {
+    // Non-JSON response mode sometimes adds an introductory sentence.
+    // Only parse an unambiguous top-level JSON object; never invent values.
+    const start = cleaned.indexOf('{'), end = cleaned.lastIndexOf('}');
+    if (start < 0 || end <= start) throw new Error('Gemini did not return parseable JSON.');
+    return JSON.parse(cleaned.slice(start, end + 1));
+  }
 }
 
 function normalizeFeed(value, sources, model, targetDate) {
@@ -319,8 +326,10 @@ async function requestModel(model, targetDate) {
     headers: { 'content-type': 'application/json', 'x-goog-api-key': GEMINI_API_KEY },
     body: JSON.stringify({
       contents: [{ role: 'user', parts: [{ text: buildPrompt(targetDate) }] }],
-      tools: [{ google_search: {} }],
-      generationConfig: { responseMimeType: 'application/json' }
+      // Search grounding must remain enabled; Gemini has intermittently rejected
+      // google_search combined with responseMimeType=application/json.
+      // Ask for JSON in the prompt and validate the returned text instead.
+      tools: [{ google_search: {} }]
     }),
     signal: AbortSignal.timeout(45000)
   });
