@@ -29,9 +29,9 @@ export async function GET(request:NextRequest,{params}:Ctx){
    footballProvider:process.env.FOOTBALL_DATA_API_KEY?'football-data.org (PL) + TheSportsDB':'TheSportsDB',legacyAuthMigrated:true,productionReady:false,
    accountConfigured:Boolean(process.env.DATABASE_URL&&process.env.JWT_SECRET&&process.env.JWT_SECRET.length>=32)});
   if(endpoint==='provider/status')return json({
-    configured:true,provider:'TheSportsDB',realtime:false,limited:true,
+    configured:true,provider:process.env.FOOTBALL_DATA_API_KEY?'football-data.org (Premier League), TheSportsDB (other leagues)':'TheSportsDB',realtime:false,limited:true,
     source:'https://www.thesportsdb.com/',season:season(),
-    leagues:LEAGUES,notice:'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
+    leagues:LEAGUES,notice:process.env.FOOTBALL_DATA_API_KEY?'Premier League uses football-data.org; other leagues use limited TheSportsDB free data. Live scores may be delayed.':'Free v1 shows up to 3 daily fixtures per league and 5 table rows; scores can be delayed.'
   });
   if(endpoint==='competitions'){
    const data=await Promise.all(LEAGUES.map(async l=>{
