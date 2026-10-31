@@ -147,3 +147,10 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
 .notification-panel-actions button{display:inline-flex;align-items:center;gap:8px;min-height:39px;padding:10px 12px;border:1px solid #5b866d;background:#2c4b3b;color:#d6ffbb;border-radius:10px;font-size:11px;font-weight:850}
 .notification-panel-actions button:hover{background:#355b47}
 .notification-panel-actions button:disabled{opacity:.5}
+
+/* Fixed navigation cannot grow beyond the viewport on 360px Android screens. */
+@media(max-width:700px){
+ .bottom-nav{width:100vw;max-width:100vw;min-width:0;right:auto;box-sizing:border-box;overflow-x:clip}
+ .bottom-nav a{min-width:0;flex:1 1 0;overflow:hidden}
+ .bottom-nav a span{max-width:100%;overflow:hidden;text-overflow:ellipsis;white-space:nowrap}
+}
