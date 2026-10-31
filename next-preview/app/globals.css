@@ -135,3 +135,15 @@ h1,h2,h3,p{margin-top:0}h1,h2,h3{font-family:var(--font-display);letter-spacing:
  .league-pills{margin-left:0;margin-right:0;padding-left:0;padding-right:0}
  .fixture-shell,.table-surface,.hero,.account-panel,.news-hero{max-width:100%}
 }
+
+.notification-panel{margin-top:24px;padding:18px;background:#132e3b;border:1px solid #3a6060;border-radius:14px;color:#bbd0d9}
+.notification-panel-head{display:flex;align-items:center;gap:12px}
+.notification-panel-head>svg{flex:0 0 auto;color:var(--lime)}
+.notification-panel-head>div{display:flex;flex-direction:column}
+.notification-panel-head strong{font-size:13px;color:#f3fcff}
+.notification-panel-head small{font-size:10px;color:#a1bdcc}
+.notification-panel>p{font-size:11px;line-height:1.6;margin:12px 0 0}
+.notification-panel-actions{display:flex;gap:8px;flex-wrap:wrap;margin-top:15px}
+.notification-panel-actions button{display:inline-flex;align-items:center;gap:8px;min-height:39px;padding:10px 12px;border:1px solid #5b866d;background:#2c4b3b;color:#d6ffbb;border-radius:10px;font-size:11px;font-weight:850}
+.notification-panel-actions button:hover{background:#355b47}
+.notification-panel-actions button:disabled{opacity:.5}
