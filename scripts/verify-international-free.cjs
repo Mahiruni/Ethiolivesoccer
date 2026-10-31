@@ -36,5 +36,7 @@ async function probe(entry,endpoint,field) {
  for(const entry of checks){
    await probe(entry,`eventsseason.php?id=${entry.id}&s=${entry.season}`,'events');
    await probe(entry,`lookuptable.php?l=${entry.id}&s=${entry.season}`,'table');
+   await probe(entry,`eventsday.php?d=2026-10-31&l=${entry.id}`,'events');
+   await probe(entry,`eventsnextleague.php?id=${entry.id}`,'events');
  }
 })().catch(e=>{console.error(e);process.exitCode=1});
