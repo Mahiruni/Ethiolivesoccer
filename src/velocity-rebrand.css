@@ -263,3 +263,23 @@ button:active,[role="button"]:active{transform:none!important}
 @media(prefers-reduced-motion:reduce){
  *,*::before,*::after{animation-duration:.01ms!important;animation-iteration-count:1!important;transition-duration:.01ms!important;scroll-behavior:auto!important}
 }
+
+/* Live content-led hero and empty news treatments */
+.matchday-pulse{display:flex;flex-wrap:wrap;gap:0;margin-top:21px;padding-top:17px;border-top:1px solid rgba(138,185,175,.25);max-width:495px}
+.matchday-pulse>span{min-width:110px;display:flex;flex-direction:column;gap:1px;padding:0 17px;border-right:1px solid #38535a}
+.matchday-pulse>span:first-child{padding-left:0}
+.matchday-pulse>span:last-child{border-right:none}
+.matchday-pulse b{font-size:24px;color:#c7f568;line-height:1.08;font-weight:900;font-variant-numeric:tabular-nums;letter-spacing:-.05em}
+.matchday-pulse small{font-size:10px;font-weight:750;color:#9cbac7;letter-spacing:.02em}
+.news-empty{display:flex;align-items:center;gap:14px;width:100%;padding:20px!important;min-height:110px}
+.news-empty svg{flex:0 0 auto;color:#c7f568}
+.news-empty b{font-size:14px;color:#f3fafe}
+.news-empty p{margin:4px 0 0;font-size:12px;color:#9fbbcb;line-height:1.5}
+.page-head .matchday-pulse{position:relative;z-index:1}
+@media(max-width:760px){
+ .matchday-pulse{margin-top:16px;padding-top:14px;max-width:100%}
+ .matchday-pulse>span{min-width:0;flex:1 1 30%;padding:0 9px}
+ .matchday-pulse b{font-size:22px}
+ .matchday-pulse small{font-size:9px}
+ .news-empty{padding:16px!important}
+}
