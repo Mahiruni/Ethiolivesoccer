@@ -10,7 +10,7 @@ const finishedStatuses=new Set(['FT','AET','PEN']);
 const tabs=[['overview','Overview'],['timeline','Timeline'],['lineups','Lineups'],['stats','Stats'],['h2h','H2H'],['table','Table'],['community','Community']];
 const initials=name=>String(name||'Team').split(/\s+/).slice(0,2).map(x=>x[0]).join('').toUpperCase();
 const asNumber=v=>{if(v===null||v===undefined||v==='')return 0;const n=Number(String(v).replace('%',''));return Number.isFinite(n)?n:0};
-const prettyTime=date=>{try{return new Intl.DateTimeFormat('en-ET',{dateStyle:'medium',timeStyle:'short',timeZone:'Africa/Addis_Ababa'}).format(new Date(date))}catch{return '—'}};
+const prettyTime=date=>{if(!date)return 'Kickoff TBD';try{return new Intl.DateTimeFormat('en-ET',{dateStyle:'medium',timeStyle:'short',timeZone:'Africa/Addis_Ababa'}).format(new Date(date))}catch{return 'Kickoff TBD'}};
 
 export default function MatchDetails({ onNeedAuth }){
   const { id }=useParams(); const location=useLocation(); const navigate=useNavigate(); const auth=useAuth();
@@ -24,7 +24,7 @@ export default function MatchDetails({ onNeedAuth }){
   const isLive=liveStatuses.has(String(match?.status||'').toUpperCase());
   useEffect(()=>{if(!match)return;const timer=setInterval(()=>load(true),isLive?15000:60000);return()=>clearInterval(timer);},[id,isLive,Boolean(match)]);
 
-  const localId=data?.local_match_id||match?.local_match_id||(!String(match?.id||'').startsWith('p-')?match?.id:null);
+  const localId=data?.local_match_id||match?.local_match_id||(!/^(p-|tsdb-)/.test(String(match?.id||''))?match?.id:null);
   const loadCommunity=async()=>{if(!localId){setChat([]);setPoll(null);return;}try{const [c,p]=await Promise.all([apiFetch(`/chat/${localId}`),apiFetch(`/polls/${localId}`)]);setChat(c||[]);setPoll(p||null);}catch{setChat([]);setPoll(null)}};
   useEffect(()=>{if(tab==='community')loadCommunity();},[tab,localId]);
   useEffect(()=>{if(tab!=='community'||!localId)return;const timer=setInterval(loadCommunity,5000);return()=>clearInterval(timer)},[tab,localId]);
