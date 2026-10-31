@@ -63,7 +63,8 @@ function kickoff(raw) {
   const date = String(raw.dateEvent || '');
   const time = String(raw.strTime || '');
   if (validDate(date) && /^\d{2}:\d{2}/.test(time)) {
-    const iso = date + 'T' + time.slice(0, 8).padEnd(8, '0') + 'Z';
+    const parts = time.match(/^(\d{2}):(\d{2})(?::(\d{2}))?/);
+    const iso = date + 'T' + parts[1] + ':' + parts[2] + ':' + (parts[3] || '00') + 'Z';
     if (!Number.isNaN(Date.parse(iso))) return new Date(iso).toISOString();
   }
   return null; // Never invent a kickoff time.
