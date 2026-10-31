@@ -22,7 +22,7 @@ let db:Pool|undefined;
 
 function database(){
   if(!process.env.DATABASE_URL)return null;
-  if(!db)db=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false},max:2,connectionTimeoutMillis:3500,idleTimeoutMillis:10000});
+  if(!db)db=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:true},max:2,connectionTimeoutMillis:3500,idleTimeoutMillis:10000});
   return db;
 }
 export function isValidDate(value:string){
