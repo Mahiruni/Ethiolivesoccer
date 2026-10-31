@@ -20,5 +20,5 @@ export default function FootballLogo({name,src,className='',size=36,priority=fal
 }
 export function CountryFlag({country}:{country:string}){
  const flag=countryIdentity(country);
- return <span className="football-country-flag" role="img" title={country} aria-label={country+' country flag'}>{flag.emoji}</span>;
+ return <span className={'football-country-flag '+(flag.iso==='gb-eng'?'flag-england':'')} role="img" title={country} aria-label={country+' flag'}>{flag.iso==='gb-eng'?null:flag.emoji}</span>;
 }
