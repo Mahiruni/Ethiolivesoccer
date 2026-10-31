@@ -179,3 +179,17 @@ html,body{overflow-x:clip}
 .fan-empty svg{color:#8ba9b7;flex:0 0 auto}
 .fan-activity-link{display:inline-flex;margin-top:16px;font-size:11px;color:#c7f568;font-weight:800}
 @media(max-width:700px){.fan-activity{padding:14px;margin-top:18px}.fan-prediction{flex-direction:column;align-items:flex-start;gap:4px}}
+
+/* Controlled native-feeling motion, with no scroll hijacking or layout shifts. */
+@keyframes matchday-rise{from{opacity:0;transform:translateY(10px)}to{opacity:1;transform:translateY(0)}}
+@keyframes matchday-fade{from{opacity:.45}to{opacity:1}}
+.matchday-page>.hero,.match-detail-hero,.account-intro{animation:matchday-rise .34s cubic-bezier(.2,.8,.2,1) both}
+.matchday-page>.section-label,.matchday-page>.league-pills,.matchday-grid,.detail-lower-grid{animation:matchday-fade .3s ease both}
+.league-pill,.day-button,.filter-tabs button,.bottom-nav a,.action-primary,.fixture-row,.fan-favorite button,.fan-refresh,.account-tabs button,.account-submit{
+ transition:background-color .17s ease,color .17s ease,border-color .17s ease,box-shadow .17s ease,opacity .17s ease,transform .17s cubic-bezier(.2,.8,.2,1);
+}
+.league-pill:active,.day-button:active,.action-primary:active,.account-submit:active{transform:scale(.98)}
+.bottom-nav a.active svg{filter:drop-shadow(0 0 5px rgba(199,245,104,.25))}
+@media(prefers-reduced-motion:reduce){
+ .matchday-page>.hero,.match-detail-hero,.account-intro,.matchday-page>.section-label,.matchday-page>.league-pills,.matchday-grid,.detail-lower-grid{animation:none!important}
+}
