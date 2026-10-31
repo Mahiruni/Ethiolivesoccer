@@ -29,7 +29,7 @@ export default async function MatchPage({params}:{params:Promise<{id:string}>}){
       </div>
       <div className="detail-team"><FootballLogo name={match.away} src={match.awayLogo} size={64} className="detail-logo"/><h1>{match.away}</h1></div>
     </div>
-    <p className="muted centered">Free data by TheSportsDB. Match status, statistics, lineups and event coverage may be delayed or unavailable.</p>
+    <p className="muted centered">Data by {id.startsWith('fd-')?'football-data.org':'TheSportsDB'}. Match status, statistics, lineups and event coverage may be delayed or unavailable.</p>
   </section>
   <section className="detail-lower-grid">
     <article className="surface"><span className="eyebrow">MATCH INFORMATION</span><h2>Fixture overview</h2><dl className="detail-list"><div><dt>Competition</dt><dd>{match.league}</dd></div><div><dt>Venue</dt><dd>{match.venue||'Not reported'}</dd></div><div><dt>Kickoff</dt><dd>{date}</dd></div><div><dt>Data source</dt><dd>TheSportsDB free feed</dd></div></dl></article>
