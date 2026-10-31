@@ -66,12 +66,15 @@ test('signed-in profile renders real account activity contract and logout',async
  expect(await page.evaluate(()=>localStorage.getItem('ethio_token'))).toBeNull();
 });
 
-test('verified identity components render flags and accessible crest fallbacks',async({page})=>{
+test('verified identity components hide country flags and keep frameless crests',async({page})=>{
  await page.goto('/');
- await expect(page.getByRole('img',{name:'England flag'}).first()).toBeVisible();
+ await expect(page.getByRole('img',{name:'England flag'})).toHaveCount(0);
  await expect(page.locator('.football-logo-fallback').first()).toBeVisible();
  await expect(page.locator('.fixture-logo.football-logo').first()).toBeVisible();
  await expect(page.getByText('Bournemouth')).toBeVisible();
  await page.locator('.league-pill').filter({hasText:'La Liga'}).click();
- await expect(page.getByRole('img',{name:'Spain flag'}).first()).toBeVisible();
+ await expect(page.getByRole('img',{name:'Spain flag'})).toHaveCount(0);
+ const logo=page.locator('.league-pill[aria-pressed="true"] .football-logo').first();
+ await expect(logo).toHaveCSS('background-color','rgba(0, 0, 0, 0)');
+ await expect(logo).toHaveCSS('border-top-width','0px');
 });
