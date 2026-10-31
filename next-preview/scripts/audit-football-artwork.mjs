@@ -21,11 +21,18 @@ const isValid=value=>{
   /^\/images\/(media|icons)\//.test(u.pathname)&&!u.search&&!u.hash;}catch{return false}
 };
 async function read(endpoint,key){
- const response=await fetch(base+'/'+endpoint,{signal:AbortSignal.timeout(10000),headers:{accept:'application/json'}});
- if(response.status===429){log.push('Rate limited at '+endpoint);return []}
- if(!response.ok){log.push(endpoint+' returned HTTP '+response.status);return []}
- const data=await response.json();
- return Array.isArray(data?.[key])?data[key]:[];
+ for(let attempt=0;attempt<3;attempt++){
+  const response=await fetch(base+'/'+endpoint,{signal:AbortSignal.timeout(10000),headers:{accept:'application/json'}});
+  if(response.status===429){
+    if(attempt===2){log.push('Rate limited after 3 attempts: '+endpoint);return []}
+    await new Promise(r=>setTimeout(r,30000));
+    continue;
+  }
+  if(!response.ok){log.push(endpoint+' returned HTTP '+response.status);return []}
+  const data=await response.json();
+  return Array.isArray(data?.[key])?data[key]:[];
+ }
+ return [];
 }
 function add(entity,providerId,name,candidateUrl,via){
  if(!/^\d+$/.test(String(providerId||''))||!isValid(candidateUrl))return;
