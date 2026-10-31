@@ -3,7 +3,7 @@ import Link from 'next/link';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowUpRight,CalendarDays,ChevronLeft,ChevronRight,Clock3,RefreshCw,Radio,Info,Trophy,Activity,ShieldCheck,TriangleAlert} from 'lucide-react';
 import type {Fixture,Standing} from '@/lib/football';
-import FootballLogo, {CountryFlag} from './FootballLogo';
+import FootballLogo from './FootballLogo';
 
 type LeagueItem={slug:string;name:string;short:string;country:string;label:string;accent:string};
 const LEAGUES:LeagueItem[]=[
@@ -120,7 +120,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
   <div className="section-label"><div><span className="eyebrow">01 / THE LEAGUES</span><h2>Pick your competition</h2></div><div className="source-indicator"><ShieldCheck size={15}/> VERIFIED SOURCE · PARTIAL COVERAGE</div></div>
   <nav className="league-pills" aria-label="Choose competition">
    {LEAGUES.map(l=><button key={l.slug} type="button" className={'league-pill '+(league===l.slug?'selected':'')} onClick={()=>changeLeague(l.slug)} aria-pressed={league===l.slug}>
-    <span className="league-identity"><CountryFlag country={l.country}/><FootballLogo name={l.name} src={verifiedLeagueLogos[l.slug]} size={34} kind="league"/></span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
+    <span className="league-identity"><FootballLogo name={l.name} src={verifiedLeagueLogos[l.slug]} size={34} kind="league"/></span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
   </nav>
   <div className="coverage-notice"><Info size={15}/><span>Free-source coverage is limited to roughly three match records per league/date and the first five table rows. This is not a real-time licensed feed.</span><a href="https://www.thesportsdb.com/" target="_blank" rel="noopener noreferrer">THE SPORTS DB <ArrowUpRight size={13}/></a></div>
   <div className="matchday-grid">
