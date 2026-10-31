@@ -3,6 +3,7 @@ import Link from 'next/link';
 import {useEffect,useMemo,useRef,useState} from 'react';
 import {ArrowUpRight,CalendarDays,ChevronLeft,ChevronRight,Clock3,RefreshCw,Radio,Info,Trophy,Activity,ShieldCheck,TriangleAlert} from 'lucide-react';
 import type {Fixture,Standing} from '@/lib/football';
+import FootballLogo, {CountryFlag} from './FootballLogo';
 
 type LeagueItem={slug:string;name:string;short:string;country:string;label:string;accent:string};
 const LEAGUES:LeagueItem[]=[
@@ -39,8 +40,8 @@ function MatchRow({match}:{match:Fixture}){
  return <Link href={'/match/'+match.id} className="fixture-row">
   <div className={'fixture-status '+(match.status==='LIVE'?'is-live':'')}>{statusLabel(match)}</div>
   <div className="fixture-teams">
-   <span className="fixture-team"><span className="team-monogram">{initials(match.home)}</span><b>{match.home}</b></span>
-   <span className="fixture-team"><span className="team-monogram">{initials(match.away)}</span><b>{match.away}</b></span>
+   <span className="fixture-team"><FootballLogo name={match.home} src={match.homeLogo} size={26} className="fixture-logo"/><b>{match.home}</b></span>
+   <span className="fixture-team"><FootballLogo name={match.away} src={match.awayLogo} size={26} className="fixture-logo"/><b>{match.away}</b></span>
   </div>
   <div className="fixture-result"><strong>{scored?match.homeScore:'—'}</strong><strong>{scored?match.awayScore:'—'}</strong></div>
   <ChevronRight size={17} className="fixture-chevron"/>
@@ -105,7 +106,7 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
   <div className="section-label"><div><span className="eyebrow">01 / THE LEAGUES</span><h2>Pick your competition</h2></div><div className="source-indicator"><ShieldCheck size={15}/> VERIFIED SOURCE · PARTIAL COVERAGE</div></div>
   <nav className="league-pills" aria-label="Choose competition">
    {LEAGUES.map(l=><button key={l.slug} type="button" className={'league-pill '+(league===l.slug?'selected':'')} onClick={()=>changeLeague(l.slug)} aria-pressed={league===l.slug}>
-    <span className="league-emblem" style={{'--league-accent':l.accent} as React.CSSProperties}>{l.short}</span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
+    <span className="league-identity"><CountryFlag country={l.country}/><FootballLogo name={l.name} size={34} kind="league"/></span><span><strong>{l.name}</strong><small>{l.country}</small></span><ArrowUpRight size={15}/></button>)}
   </nav>
   <div className="coverage-notice"><Info size={15}/><span>Free-source coverage is limited to roughly three match records per league/date and the first five table rows. This is not a real-time licensed feed.</span><a href="https://www.thesportsdb.com/" target="_blank" rel="noopener noreferrer">THE SPORTS DB <ArrowUpRight size={13}/></a></div>
   <div className="matchday-grid">
@@ -124,12 +125,12 @@ export default function Matchday({initialLeague='premier-league'}:{initialLeague
    </section>
    <aside className="sidebar-pane">
     <div className="section-label section-label-tight"><div><span className="eyebrow">03 / THE STANDINGS</span><h2>League table</h2></div><Trophy size={22} className="sidebar-title-icon"/></div>
-    <div className="table-surface"><div className="table-top"><div className="table-league"><span className="table-league-emblem">{selected.short}</span><div><strong>{selected.name}</strong><small>2026/27 SEASON</small></div></div><span className="table-badge">TOP 5</span></div>
+    <div className="table-surface"><div className="table-top"><div className="table-league"><span className="table-league-emblem"><CountryFlag country={selected.country}/></span><div><strong>{selected.name}</strong><small>2026/27 SEASON</small></div></div><span className="table-badge">TOP 5</span></div>
       <div className="table-columns"><span>#</span><span>CLUB</span><span>PL</span><span>PTS</span></div>
-      {state.loading?<Skeleton/>:state.tableError?<div className="data-empty table-empty"><TriangleAlert size={23}/><p>{state.tableError}</p></div>:state.standings.length?state.standings.slice(0,5).map(row=><div className="table-item" key={row.team+'-'+row.position}><span className="table-rank">{row.position}</span><span className="table-name"><span className="table-team-mark">{initials(row.team)}</span><span>{row.team}</span></span><span>{row.played??'—'}</span><strong>{row.points??'—'}</strong></div>):<div className="data-empty table-empty"><p>No verified table returned for this league.</p></div>}
+      {state.loading?<Skeleton/>:state.tableError?<div className="data-empty table-empty"><TriangleAlert size={23}/><p>{state.tableError}</p></div>:state.standings.length?state.standings.slice(0,5).map(row=><div className="table-item" key={row.team+'-'+row.position}><span className="table-rank">{row.position}</span><span className="table-name"><FootballLogo name={row.team} src={row.teamLogo} size={28} className="table-logo"/><span>{row.team}</span></span><span>{row.played??'—'}</span><strong>{row.points??'—'}</strong></div>):<div className="data-empty table-empty"><p>No verified table returned for this league.</p></div>}
       <p className="table-footer"><Info size={13}/> A PARTIAL TABLE. FULL STANDINGS ARE NOT AVAILABLE ON THE FREE PLAN.</p>
     </div>
-    <div className="fan-card"><div className="fan-symbol"><Activity size={26}/></div><span className="eyebrow">THE NEXT CHAPTER</span><h3>More than the score.</h3><p>Profiles, favorites, predictions and fan conversations are being migrated into the new Next.js platform. Your existing production community remains available.</p><span className="fan-phase">NEXT.JS PREVIEW · FEATURES IN PROGRESS</span></div>
+    <div className="fan-card"><div className="fan-symbol"><Activity size={26}/></div><span className="eyebrow">THE NEXT CHAPTER</span><h3>More than the score.</h3><p>Follow your clubs and join the matchday conversation. Team crest imagery is displayed only when individual publication rights are verified.</p><span className="fan-phase">SPORTS IMAGE RIGHTS VERIFIED INDIVIDUALLY</span></div>
    </aside>
   </div>
  </main>
