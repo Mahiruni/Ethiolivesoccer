@@ -14,6 +14,7 @@ function getDb(){
   if(!pool)pool=new Pool({connectionString:process.env.DATABASE_URL,ssl:{rejectUnauthorized:false},max:3,connectionTimeoutMillis:5000,idleTimeoutMillis:15000});
   return pool;
 }
+export function accountDatabase(){return getDb()}
 function signingSecret(){
   if(signingKey.length<32)throw new AuthError(503,'AUTH_NOT_CONFIGURED','Account sign-in is not configured in this preview.');
   return signingKey;
