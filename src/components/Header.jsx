@@ -1,4 +1,4 @@
-import { Bell, Languages, UserRound, Activity, ArrowUpRight } from 'lucide-react';
+import { Bell, Languages, UserRound, ArrowUpRight } from 'lucide-react';
 import { Link, NavLink } from 'react-router-dom';
 import Avatar from './Avatar';
 import { useAuth } from '../context/AuthContext';
@@ -8,9 +8,9 @@ export default function Header({ lang, onToggleLang, onAuth, onProfile }) {
   return <>
     <header className="topbar">
       <div className="topbar-inner">
-        <Link className="brand" to="/" aria-label="EthioLiveScores home">
-          <span className="brand-mark"><Activity size={22} strokeWidth={2.8}/></span>
-          <span className="brand-wordmark"><span className="brand-name">ETHIO<span>LIVE</span></span><span className="brand-tagline">The global matchday</span></span>
+        <Link className="brand" to="/" aria-label="FETAN football home">
+          <span className="brand-mark" aria-hidden="true"><svg viewBox="0 0 24 32" width="19" height="26" fill="none"><path d="M14.5 1 3 17h8l-1.4 14L22 12h-8.1L14.5 1Z" fill="#F31F55"/></svg></span>
+          <span className="brand-wordmark"><span className="brand-name">Fetan</span><span className="brand-tagline">Global football live</span></span>
         </Link>
         <div className="header-actions">
           <button type="button" className="icon-btn" onClick={onToggleLang} aria-label="Switch language"><Languages size={17}/><span className="action-label">{lang === 'en' ? 'አማ' : 'EN'}</span></button>
