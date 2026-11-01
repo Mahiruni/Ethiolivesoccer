@@ -2,7 +2,7 @@
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "buildCommand": "npm run build",
   "functions": {
-    "bootstrap.js": {
+    "api/index.js": {
       "includeFiles": "dist/**"
     }
   },
@@ -10,28 +10,65 @@
     {
       "source": "/",
       "headers": [
-        {"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"},
-        {"key":"Pragma","value":"no-cache"}
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/index.html",
       "headers": [
-        {"key":"Cache-Control","value":"no-store, max-age=0, must-revalidate"},
-        {"key":"Pragma","value":"no-cache"}
+        {
+          "key": "Cache-Control",
+          "value": "no-store, max-age=0, must-revalidate"
+        },
+        {
+          "key": "Pragma",
+          "value": "no-cache"
+        }
       ]
     },
     {
       "source": "/assets/(.*)",
-      "headers": [{"key":"Cache-Control","value":"public, max-age=31536000, immutable"}]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=31536000, immutable"
+        }
+      ]
     },
     {
       "source": "/sw.js",
-      "headers": [{"key":"Cache-Control","value":"no-cache, no-store, must-revalidate"}]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "no-cache, no-store, must-revalidate"
+        }
+      ]
     },
     {
       "source": "/manifest.json",
-      "headers": [{"key":"Cache-Control","value":"public, max-age=3600, stale-while-revalidate=86400"}]
+      "headers": [
+        {
+          "key": "Cache-Control",
+          "value": "public, max-age=3600, stale-while-revalidate=86400"
+        }
+      ]
+    }
+  ],
+  "rewrites": [
+    {
+      "source": "/api/:path*",
+      "destination": "/api/index"
+    },
+    {
+      "source": "/((?!api/|assets/|.*\\..*).*)",
+      "destination": "/index.html"
     }
   ]
 }
