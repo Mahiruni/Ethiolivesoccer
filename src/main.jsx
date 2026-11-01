@@ -11,6 +11,7 @@ import './competition-ui.css';
 import './visual-identity.css';
 import './performance.css';
 import './velocity-rebrand.css';
+import './fetan-reference-brand.css';
 
 createRoot(document.getElementById('root')).render(
   <React.StrictMode><BrowserRouter><AuthProvider><App/></AuthProvider></BrowserRouter></React.StrictMode>

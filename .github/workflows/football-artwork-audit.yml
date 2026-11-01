@@ -1,0 +1,30 @@
+name: Football artwork rights audit
+on:
+  workflow_dispatch:
+  push:
+    branches: [migration/next16-app-router]
+    paths:
+      - 'next-preview/scripts/audit-football-artwork.mjs'
+      - '.github/workflows/football-artwork-audit.yml'
+permissions:
+  contents: read
+jobs:
+  catalog-candidates:
+    runs-on: ubuntu-latest
+    timeout-minutes: 6
+    defaults:
+      run:
+        working-directory: next-preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - name: Gather official-provider image candidate links (no downloads / no publication)
+        run: node scripts/audit-football-artwork.mjs
+      - name: Upload source-ID audit with license review fields
+        uses: actions/upload-artifact@v4
+        with:
+          name: football-logo-rights-review
+          path: next-preview/artwork-audit/candidates.json
+          retention-days: 14

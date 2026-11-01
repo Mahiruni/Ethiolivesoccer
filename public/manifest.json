@@ -1,11 +1,23 @@
 {
-  "short_name": "EthioLive",
-  "name": "EthioLiveScores — Global Matchday",
+  "id": "/",
+  "name": "FETAN — Live Football",
+  "short_name": "FETAN",
+  "description": "Live football scores, fixtures, news and fan community.",
   "start_url": "/",
   "scope": "/",
-  "background_color": "#07111d",
-  "theme_color": "#07111d",
   "display": "standalone",
-  "orientation": "portrait",
-  "description": "International football fixtures, reported scores, standings and fan community."
+  "display_override": [
+    "standalone"
+  ],
+  "background_color": "#090909",
+  "theme_color": "#090909",
+  "orientation": "any",
+  "icons": [
+    {
+      "src": "/fetan-icon.svg",
+      "sizes": "any",
+      "type": "image/svg+xml",
+      "purpose": "any maskable"
+    }
+  ]
 }

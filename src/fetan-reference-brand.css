@@ -1,0 +1,12 @@
+/* FETAN logo and typography based on the user-supplied lightning wordmark reference.
+   Deliberately scoped to branding/typography; preserves existing page layouts. */
+:root{--fetan-accent:#f31f55}
+body{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;letter-spacing:-.012em}
+h1,h2,h3,.brand-name,.score-center strong,.hero-score strong{font-family:Inter,ui-sans-serif,system-ui,-apple-system,"Segoe UI",Arial,sans-serif!important;font-stretch:normal!important;letter-spacing:-.035em!important}
+.brand{display:inline-flex;align-items:center;gap:5px!important;text-decoration:none;min-width:0}
+.brand-mark{display:inline-flex!important;align-items:center;justify-content:center;width:23px!important;height:31px!important;flex:0 0 23px!important;background:transparent!important;border:0!important;border-radius:0!important;box-shadow:none!important;padding:0!important}
+.brand-mark svg{width:17px;height:26px;display:block}
+.brand-wordmark{display:flex;flex-direction:column;gap:0!important}
+.brand-name{font-size:clamp(22px,2.4vw,28px)!important;font-weight:800!important;line-height:1.1!important;letter-spacing:-.045em!important;text-transform:none!important;color:#fff!important;text-shadow:none!important}
+.brand-tagline{font-size:9px!important;font-weight:650!important;letter-spacing:.09em!important;text-transform:uppercase;color:#9da0a9!important}
+@media(max-width:600px){.brand-name{font-size:25px!important}.brand-tagline{font-size:8px!important}}

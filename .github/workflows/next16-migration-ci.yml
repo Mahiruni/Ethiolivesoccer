@@ -1,0 +1,68 @@
+name: Next.js 16 migration validation
+on:
+  push:
+    branches: [migration/next16-app-router, feat/verified-sports-identity]
+  pull_request:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  next-preview:
+    if: github.head_ref == 'migration/next16-app-router' || github.ref == 'refs/heads/migration/next16-app-router' || github.head_ref == 'feat/verified-sports-identity' || github.ref == 'refs/heads/feat/verified-sports-identity'
+    runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: next-preview
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+      - run: npm install --no-audit --no-fund
+      - run: npm test
+      - run: npm run build
+        env:
+          NEXT_TELEMETRY_DISABLED: '1'
+      - name: Smoke-check App Router and public API
+        run: |
+          set -euo pipefail
+          node node_modules/next/dist/bin/next start > /tmp/ethiolive-next.log 2>&1 &
+          server_pid=$!
+          trap 'kill $server_pid || true' EXIT
+          for i in $(seq 1 30); do
+            if curl -fsS http://127.0.0.1:3000/api/health > /tmp/ethiolive-health.json; then break; fi
+            sleep 2
+          done
+          node -e 'const fs=require("fs");const data=JSON.parse(fs.readFileSync("/tmp/ethiolive-health.json","utf8"));if(!data.ok||data.productionReady)process.exit(1)'
+          curl -fsS http://127.0.0.1:3000/ > /tmp/ethiolive-home.html
+          grep -q "EthioLiveScores" /tmp/ethiolive-home.html
+          curl -fsS http://127.0.0.1:3000/league/la-liga > /tmp/ethiolive-league.html
+          grep -q "La Liga" /tmp/ethiolive-league.html
+          # Auth must fail safely when preview has no DB/JWT secrets.
+          auth_status="$(curl -s -o /tmp/ethiolive-auth.json -w '%{http_code}' -H 'Content-Type: application/json' -d '{"email":"sample@example.com","password":"examplepassword"}' http://127.0.0.1:3000/api/auth/login)"
+          [ "$auth_status" = "503" ]
+          node -e 'const x=require("/tmp/ethiolive-auth.json");if(x.code!=="AUTH_NOT_CONFIGURED")process.exit(1)'
+          # Prevent any anonymous access to private account and community resources.
+          for endpoint in auth/me me/favorites me/preferences me/predictions; do
+            response="$(curl -s -o /tmp/ethiolive-protected.json -w '%{http_code}' "http://127.0.0.1:3000/api/$endpoint")"
+            [ "$response" = "401" ] || { echo "Unauthorized API exposed: $endpoint ($response)"; exit 1; }
+          done
+          vote_status="$(curl -s -o /tmp/ethiolive-vote.json -w '%{http_code}' -H 'Content-Type: application/json' -d '{"vote_choice":"home"}' http://127.0.0.1:3000/api/polls/1)"
+          [ "$vote_status" = "401" ] || { echo "Unauthenticated vote accepted"; exit 1; }
+          curl -fsS http://127.0.0.1:3000/api/push/config > /tmp/ethiolive-push.json
+          curl -fsS http://127.0.0.1:3000/api/news > /tmp/ethiolive-news.json
+          echo "Next.js migration preview HTTP smoke passed"
+      - name: Install Chromium for responsive browser tests
+        run: npx playwright install --with-deps chromium
+      - name: Run mobile, tablet and desktop experience tests
+        run: npx playwright test
+      - name: Save responsive screenshots and diagnostics
+        if: always()
+        uses: actions/upload-artifact@v4
+        with:
+          name: next16-responsive-browser-results
+          path: |
+            next-preview/test-results/
+            next-preview/playwright-report/
+          retention-days: 7
