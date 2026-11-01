@@ -3,6 +3,7 @@ import { Route, Routes, useLocation } from 'react-router-dom';
 import Header from './components/Header';
 import HomePage from './components/HomePage';
 import BottomNav from './components/BottomNav';
+import VoiceFooter from './components/VoiceFooter';
 import { useAuth } from './context/AuthContext';
 
 const MatchDetails=lazy(()=>import('./components/MatchDetails'));
@@ -43,6 +44,7 @@ export default function App(){
         <Route path="*" element={<HomePage lang={lang} onNeedAuth={needAuth}/>}/>
       </Routes>
     </Suspense>
+    <VoiceFooter/>
     <BottomNav onProfile={openProfile} onAuth={needAuth}/>
     {authOpen&&<Suspense fallback={null}><AuthModal open onClose={()=>setAuthOpen(false)}/></Suspense>}
     {profileOpen&&<Suspense fallback={null}><ProfileDrawer open onClose={()=>setProfileOpen(false)}/></Suspense>}
