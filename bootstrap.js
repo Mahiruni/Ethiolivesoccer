@@ -6,6 +6,8 @@ const fetanEngine = require('./fetan-engine-router');
 const fetanDataRouter = require('./fetan-data-router');
 
 const app = express();
+const fetanOwnedData = require('./fetan-owned-data-router');
+app.use('/api/fetan', fetanOwnedData);
 app.use('/api/fetan', fetanEngine);
 app.use('/api', fetanDataRouter);
 
