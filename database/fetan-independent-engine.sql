@@ -10,4 +10,4 @@ CREATE TABLE IF NOT EXISTS fetan_notification_preferences (user_id BIGINT PRIMAR
 CREATE TABLE IF NOT EXISTS fetan_follows (user_id BIGINT NOT NULL, team_id BIGINT NOT NULL REFERENCES fetan_teams(id), PRIMARY KEY(user_id,team_id));
 CREATE TABLE IF NOT EXISTS fetan_notification_outbox (id BIGSERIAL PRIMARY KEY, dedupe_key TEXT UNIQUE NOT NULL, user_id BIGINT NOT NULL, event_type TEXT NOT NULL, title TEXT NOT NULL, body TEXT NOT NULL, target_url TEXT NOT NULL DEFAULT '/', created_at TIMESTAMPTZ NOT NULL DEFAULT now(), sent_at TIMESTAMPTZ);
 -- Private application tables: no anonymous grants. Use a server-side DB credential only.
-REVOKE ALL ON ALL TABLES IN SCHEMA public FROM PUBLIC;
+REVOKE ALL ON fetan_teams, fetan_competitions, fetan_matches, fetan_match_events, fetan_articles, fetan_notification_preferences, fetan_follows, fetan_notification_outbox FROM PUBLIC, anon, authenticated;
