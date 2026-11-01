@@ -2,9 +2,11 @@ const express = require('express');
 const geminiRouter = require('./gemini-router');
 const internationalRouter = require('./international-router');
 const legacyApp = require('./legacy-server');
+const fetanEngine = require('./fetan-engine-router');
 const fetanDataRouter = require('./fetan-data-router');
 
 const app = express();
+app.use('/api/fetan', fetanEngine);
 app.use('/api', fetanDataRouter);
 
 // International football is the default product direction when selected in
