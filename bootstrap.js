@@ -2,8 +2,10 @@ const express = require('express');
 const geminiRouter = require('./gemini-router');
 const internationalRouter = require('./international-router');
 const legacyApp = require('./legacy-server');
+const fetanDataRouter = require('./fetan-data-router');
 
 const app = express();
+app.use('/api', fetanDataRouter);
 
 // International football is the default product direction when selected in
 // deployment settings. TheSportsDB's documented free v1 API needs no secret.
